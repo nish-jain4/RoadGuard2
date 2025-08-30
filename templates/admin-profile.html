@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Profile - QuickDesk</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    .profile-header {
+      background: linear-gradient(135deg, #e74a3b 0%, #be2617 100%);
+    }
+    .stats-card {
+      border-left: 3px solid #e74a3b;
+    }
+    .system-health {
+      height: 250px;
+    }
+  </style>
+</head>
+<body class="bg-light">
+  <!-- Navigation -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+      <a class="navbar-brand" href="admin-dashboard.html">
+        <i class="fas fa-ticket-alt me-2"></i>QuickDesk
+      </a>
+      <div class="d-flex align-items-center">
+        <a href="admin-settings.html" class="btn btn-sm btn-outline-light me-2">
+          <i class="fas fa-cog"></i>
+        </a>
+        <div class="dropdown">
+          <button class="btn btn-outline-light dropdown-toggle" data-bs-toggle="dropdown">
+            <i class="fas fa-user-cog me-1"></i>
+            <span id="navbar-username">Admin</span>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li><a class="dropdown-item" href="admin-profile.html"><i class="fas fa-user me-2"></i>Profile</a></li>
+            <li><a class="dropdown-item" href="admin-settings.html"><i class="fas fa-cog me-2"></i>Settings</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item" href="#" onclick="logout()"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="container py-5">
+    <div class="row">
+      <div class="col-lg-4">
+        <!-- Profile Card -->
+        <div class="card shadow-sm mb-4">
+          <div class="profile-header text-center py-4 rounded-top">
+            <div class="avatar-upload mx-auto mb-3">
+              <img id="avatar-preview" src="https://ui-avatars.com/api/?name=Admin&background=fff&color=e74a3b" 
+                   class="avatar-preview rounded-circle" width="150" height="150">
+            </div>
+            <h4 id="profile-name" class="text-white mb-1">Admin User</h4>
+            <p class="text-white-50 mb-3">admin@example.com</p>
+            <span class="badge bg-light text-dark mb-4">System Administrator</span>
+          </div>
+          <div class="card-body">
+            <div class="d-flex justify-content-between mb-3">
+              <span><i class="fas fa-calendar-alt me-2 text-muted"></i>Member since</span>
+              <strong id="member-since">Jan 2021</strong>
+            </div>
+            <div class="d-flex justify-content-between mb-3">
+              <span><i class="fas fa-users me-2 text-muted"></i>Total Users</span>
+              <strong id="total-users">143</strong>
+            </div>
+            <div class="d-flex justify-content-between">
+              <span><i class="fas fa-user-shield me-2 text-muted"></i>Agents</span>
+              <strong id="total-agents">8</strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- System Health -->
+        <div class="card shadow-sm mb-4">
+          <div class="card-header bg-white">
+            <h6 class="mb-0">System Health</h6>
+          </div>
+          <div class="card-body">
+            <div class="system-health">
+              <canvas id="systemHealthChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-8">
+        <!-- Stats Cards -->
+        <div class="row mb-4">
+          <div class="col-md-4 mb-3">
+            <div class="card stats-card h-100">
+              <div class="card-body">
+                <h6 class="text-uppercase text-muted small">Open Tickets</h6>
+                <h3 class="mb-0" id="open-tickets">24</h3>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4 mb-3">
+            <div class="card stats-card h-100">
+              <div class="card-body">
+                <h6 class="text-uppercase text-muted small">Unassigned</h6>
+                <h3 class="mb-0" id="unassigned-tickets">7</h3>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4 mb-3">
+            <div class="card stats-card h-100">
+              <div class="card-body">
+                <h6 class="text-uppercase text-muted small">Avg. Resolution</h6>
+                <h3 class="mb-0" id="avg-resolution">8h</h3>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent System Activity -->
+        <div class="card shadow-sm">
+          <div class="card-header bg-white d-flex justify-content-between align-items-center">
+            <h6 class="mb-0">Recent System Activity</h6>
+            <a href="admin-dashboard.html" class="btn btn-sm btn-outline-primary">View All</a>
+          </div>
+          <div class="card-body">
+            <div class="list-group list-group-flush" id="system-activity">
+              <!-- Activity items will be loaded here -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    // Load admin data
+    document.addEventListener('DOMContentLoaded', function() {
+      const currentUser = JSON.parse(localStorage.getItem('currentUser')) || {};
+      
+      if (!currentUser || !currentUser.email || currentUser.role !== 'admin') {
+        window.location.href = 'login.html';
+        return;
+      }
+
+      // Set profile data
+      document.getElementById('profile-name').textContent = currentUser.name || 'Admin';
+      document.getElementById('navbar-username').textContent = currentUser.name || 'Admin';
+      
+      // Set avatar
+      const avatarUrl = currentUser.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.name || 'Admin')}&background=e74a3b&color=fff`;
+      document.getElementById('avatar-preview').src = avatarUrl;
+
+      // Load admin stats
+      loadAdminStats();
+      
+      // Initialize chart
+      initSystemHealthChart();
+    });
+
+    function loadAdminStats() {
+      // Simulated data - in a real app, this would come from an API
+      const users = JSON.parse(localStorage.getItem('users')) || [];
+      const tickets = JSON.parse(localStorage.getItem('tickets')) || [];
+      
+      document.getElementById('total-users').textContent = users.length;
+      document.getElementById('total-agents').textContent = users.filter(u => u.role === 'agent').length;
+      document.getElementById('open-tickets').textContent = tickets.filter(t => t.status === 'Open').length;
+      document.getElementById('unassigned-tickets').textContent = tickets.filter(t => !t.assignedTo && t.status === 'Open').length;
+      
+      // Set member since date
+      const currentUser = JSON.parse(localStorage.getItem('currentUser')) || {};
+      if (currentUser.createdAt) {
+        const joinDate = new Date(currentUser.createdAt);
+        document.getElementById('member-since').textContent = joinDate.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+      }
+      
+      // Load system activity
+      loadSystemActivity();
+    }
+
+    function loadSystemActivity() {
+      // Simulated activity data
+      const activity = [
+        { action: 'Created new user', by: 'You', time: '2 minutes ago' },
+        { action: 'Updated system settings', by: 'You', time: '1 hour ago' },
+        { action: 'Assigned ticket #4521', by: 'System', time: '3 hours ago' },
+        { action: 'Agent John resolved ticket #4518', by: 'System', time: '5 hours ago' },
+        { action: 'New ticket created by user', by: 'System', time: 'Yesterday' }
+      ];
+      
+      const activityContainer = document.getElementById('system-activity');
+      activityContainer.innerHTML = '';
+      
+      activity.forEach(item => {
+        const activityItem = document.createElement('div');
+        activityItem.className = 'list-group-item';
+        activityItem.innerHTML = `
+          <div class="d-flex w-100 justify-content-between">
+            <h6 class="mb-1">${item.action}</h6>
+            <small>${item.time}</small>
+          </div>
+          <p class="mb-1 small text-muted">By ${item.by}</p>
+        `;
+        activityContainer.appendChild(activityItem);
+      });
+    }
+
+    function initSystemHealthChart() {
+      const ctx = document.getElementById('systemHealthChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: ['Active', 'Warning', 'Critical'],
+          datasets: [{
+            data: [85, 10, 5],
+            backgroundColor: ['#1cc88a', '#f6c23e', '#e74a3b'],
+            hoverBackgroundColor: ['#17a673', '#dda20a', '#be2617'],
+            hoverBorderColor: "rgba(234, 236, 244, 1)",
+          }],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'right',
+            }
+          }
+        }
+      });
+    }
+
+    function logout() {
+      localStorage.removeItem('currentUser');
+      window.location.href = 'login.html';
+    }
+  </script>
+</body>
+</html>

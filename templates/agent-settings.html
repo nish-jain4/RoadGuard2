@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agent Settings - QuickDesk</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    .settings-card {
+      border-left: 3px solid #f6c23e;
+    }
+    .nav-pills .nav-link.active {
+      background-color: #f6c23e;
+    }
+    .nav-pills .nav-link {
+      color: #f6c23e;
+    }
+    .availability-toggle {
+      width: 60px;
+      height: 30px;
+    }
+    .availability-toggle .form-check-input {
+      width: 60px;
+      height: 30px;
+    }
+  </style>
+</head>
+<body class="bg-light">
+  <!-- Navigation -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+      <a class="navbar-brand" href="agent-dashboard.html">
+        <i class="fas fa-ticket-alt me-2"></i>QuickDesk
+      </a>
+      <div class="d-flex align-items-center">
+        <a href="agent-profile.html" class="btn btn-sm btn-outline-light me-2">
+          <i class="fas fa-user"></i>
+        </a>
+        <div class="dropdown">
+          <button class="btn btn-outline-light dropdown-toggle" data-bs-toggle="dropdown">
+            <i class="fas fa-cog me-1"></i>
+            <span>Settings</span>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li><a class="dropdown-item active" href="agent-settings.html"><i class="fas fa-user-cog me-2"></i>Agent Settings</a></li>
+            <li><a class="dropdown-item" href="#"><i class="fas fa-bell me-2"></i>Notification Settings</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item" href="#" onclick="logout()"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="container py-5">
+    <div class="row">
+      <div class="col-lg-3">
+        <div class="card shadow-sm mb-4">
+          <div class="card-header bg-white">
+            <h6 class="mb-0">Agent Settings</h6>
+          </div>
+          <div class="list-group list-group-flush">
+            <a href="#profile" class="list-group-item list-group-item-action active" data-bs-toggle="pill">
+              <i class="fas fa-user-circle me-2"></i>Profile
+            </a>
+            <a href="#availability" class="list-group-item list-group-item-action" data-bs-toggle="pill">
+              <i class="fas fa-user-clock me-2"></i>Availability
+            </a>
+            <a href="#signature" class="list-group-item list-group-item-action" data-bs-toggle="pill">
+              <i class="fas fa-signature me-2"></i>Signature
+            </a>
+            <a href="#notifications" class="list-group-item list-group-item-action" data-bs-toggle="pill">
+              <i class="fas fa-bell me-2"></i>Notifications
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-9">
+        <div class="tab-content">
+          <!-- Profile Tab -->
+          <div class="tab-pane fade show active" id="profile">
+            <div class="card shadow-sm settings-card">
+              <div class="card-header bg-white">
+                <h6 class="mb-0">Agent Profile</h6>
+              </div>
+              <div class="card-body">
+                <form id="profileForm">
+                  <div class="row mb-3">
+                    <div class="col-md-6">
+                      <label class="form-label">First Name</label>
+                      <input type="text" class="form-control" id="firstName" required>
+                    </div>
+                    <div class="col-md-6">
+                      <label class="form-label">Last Name</label>
+                      <input type="text" class="form-control" id="lastName" required>
+                    </div>
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Email</label>
+                    <input type="email" class="form-control" id="email" required>
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Phone Number</label>
+                    <input type="tel" class="form-control" id="phone">
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Department</label>
+                    <select class="form-select" id="department">
+                      <option value="Support">Support</option>
+                      <option value="Technical">Technical</option>
+                      <option value="Billing">Billing</option>
+                    </select>
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Profile Picture</label>
+                    <input type="file" class="form-control" id="avatarUpload" accept="image/*">
+                  </div>
+                  <button type="submit" class="btn btn-primary">Save Changes</button>
+                </form>
+              </div>
+            </div>
+          </div>
+
+          <!-- Availability Tab -->
+          <div class="tab-pane fade" id="availability">
+            <div class="card shadow-sm settings-card">
+              <div class="card-header bg-white">
+                <h6 class="mb-0">Availability Settings</h6>
+              </div>
+              <div class="card-body">
+                <form id="availabilityForm">
+                  <div class="mb-3">
+                    <label class="form-label">Current Status</label>
+                    <div class="d-flex align-items-center">
+                      <div class="form-check form-switch availability-toggle me-3">
+                        <input class="form-check-input" type="checkbox" id="availabilityToggle" checked>
+                      </div>
+                      <span id="availabilityStatus">Available</span>
+                    </div>
+                    <small class="text-muted">Toggle your availability to receive new tickets</small>
+                  </div>
+                  
+                  <h6 class="mb-3">Working Hours</h6>
+                  <div class="row mb-3">
+                    <div class="col-md-6">
+                      <label class="form-label">Start Time</label>
+                      <input type="time" class="form-control" id="startTime" value="09:00">
+                    </div>
+                    <div class="col-md-6">
+                      <label class="form-label">End Time</label>
+                      <input type="time" class="form-control" id="endTime" value="17:00">
+                    </div>
+                  </div>
+                  
+                  <h6 class="mb-3">Working Days</h6>
+                  <div class="mb-3">
+                    <div class="form-check form-check-inline">
+                      <input class="form-check-input" type="checkbox" id="monday" checked>
+                      <label class="form-check-label" for="monday">Mon</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                      <input class="form-check-input" type="checkbox" id="tuesday" checked>
+                      <label class="form-check-label" for="tuesday">Tue</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                      <input class="form-check-input" type="checkbox" id="wednesday" checked>
+                      <label class="form-check-label" for="wednesday">Wed</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                      <input class="form-check-input" type="checkbox" id="thursday" checked>
+                      <label class="form-check-label" for="thursday">Thu</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                      <input class="form-check-input" type="checkbox" id="friday" checked>
+                      <label class="form-check-label" for="friday">Fri</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                      <input class="form-check-input" type="checkbox" id="saturday">
+                      <label class="form-check-label" for="saturday">Sat</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                      <input class="form-check-input" type="checkbox" id="sunday">
+                      <label class="form-check-label" for="sunday">Sun</label>
+                    </div>
+                  </div>
+                  
+                  <button type="submit" class="btn btn-primary">Save Availability</button>
+                </form>
+              </div>
+            </div>
+          </div>
+
+          <!-- Signature Tab -->
+          <div class="tab-pane fade" id="signature">
+            <div class="card shadow-sm settings-card">
+              <div class="card-header bg-white">
+                <h6 class="mb-0">Email Signature</h6>
+              </div>
+              <div class="card-body">
+                <form id="signatureForm">
+                  <div class="mb-3">
+                    <label class="form-label">Signature for Ticket Responses</label>
+                    <textarea class="form-control" id="signatureText" rows="6"></textarea>
+                    <small class="text-muted">This will be automatically added to all your ticket responses</small>
+                  </div>
+                  <div class="mb-3">
+                    <div class="form-check">
+                      <input class="form-check-input" type="checkbox" id="includeContact" checked>
+                      <label class="form-check-label" for="includeContact">Include contact information</label>
+                    </div>
+                  </div>
+                  <button type="submit" class="btn btn-primary">Save Signature</button>
+                </form>
+              </div>
+            </div>
+          </div>
+
+          <!-- Notifications Tab -->
+          <div class="tab-pane fade" id="notifications">
+            <div class="card shadow-sm settings-card">
+              <div class="card-header bg-white">
+                <h6 class="mb-0">Notification Preferences</h6>
+              </div>
+              <div class="card-body">
+                <form id="notificationForm">
+                  <h6 class="mb-3">Email Notifications</h6>
+                  <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" id="emailNewTickets" checked>
+                    <label class="form-check-label" for="emailNewTickets">New ticket assignments</label>
+                  </div>
+                  <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" id="emailResponses" checked>
+                    <label class="form-check-label" for="emailResponses">Customer responses</label>
+                  </div>
+                  <div class="form-check mb-3">
+                    <input class="form-check-input" type="checkbox" id="emailEscalations" checked>
+                    <label class="form-check-label" for="emailEscalations">Escalated tickets</label>
+                  </div>
+
+                  <h6 class="mb-3">In-App Notifications</h6>
+                  <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" id="appNewTickets" checked>
+                    <label class="form-check-label" for="appNewTickets">New ticket assignments</label>
+                  </div>
+                  <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" id="appResponses" checked>
+                    <label class="form-check-label" for="appResponses">Customer responses</label>
+                  </div>
+                  <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" id="appEscalations" checked>
+                    <label class="form-check-label" for="appEscalations">Escalated tickets</label>
+                  </div>
+                  <div class="form-check mb-3">
+                    <input class="form-check-input" type="checkbox" id="appOverdue" checked>
+                    <label class="form-check-label" for="appOverdue">Approaching SLA deadlines</label>
+                  </div>
+
+                  <h6 class="mb-3">Desktop Notifications</h6>
+                  <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" id="desktopNewTickets">
+                    <label class="form-check-label" for="desktopNewTickets">New ticket assignments</label>
+                  </div>
+                  <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" id="desktopEscalations">
+                    <label class="form-check-label" for="desktopEscalations">Escalated tickets</label>
+                  </div>
+                  <div class="form-check mb-3">
+                    <input class="form-check-input" type="checkbox" id="desktopUrgent">
+                    <label class="form-check-label" for="desktopUrgent">Urgent tickets only</label>
+                  </div>
+
+                  <button type="submit" class="btn btn-primary">Save Preferences</button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Load agent settings
+    document.addEventListener('DOMContentLoaded', function() {
+      const currentUser = JSON.parse(localStorage.getItem('currentUser')) || {};
+      
+      if (!currentUser || !currentUser.email || currentUser.role !== 'agent') {
+        window.location.href = 'login.html';
+        return;
+      }
+
+      // Load profile info
+      if (currentUser.name) {
+        const names = currentUser.name.split(' ');
+        document.getElementById('firstName').value = names[0] || '';
+        document.getElementById('lastName').value = names.length > 1 ? names.slice(1).join(' ') : '';
+      }
+      document.getElementById('email').value = currentUser.email || '';
+      document.getElementById('phone').value = currentUser.phone || '';
+      document.getElementById('department').value = currentUser.department || 'Support';
+      
+      // Load availability settings
+      const availability = currentUser.availability || {
+        status: true,
+        workingHours: { start: '09:00', end: '17:00' },
+        workingDays: [true, true, true, true, true, false, false]
+      };
+      
+      document.getElementById('availabilityToggle').checked = availability.status;
+      updateAvailabilityStatus(availability.status);
+      document.getElementById('startTime').value = availability.workingHours.start;
+      document.getElementById('endTime').value = availability.workingHours.end;
+      
+      ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].forEach((day, index) => {
+        document.getElementById(day).checked = availability.workingDays[index];
+      });
+      
+      // Load signature
+      document.getElementById('signatureText').value = currentUser.signature || '';
+      document.getElementById('includeContact').checked = currentUser.includeContact !== false;
+      
+      // Load notification preferences
+      const notifications = currentUser.notificationSettings || {
+        emailNewTickets: true,
+        emailResponses: true,
+        emailEscalations: true,
+        appNewTickets: true,
+        appResponses: true,
+        appEscalations: true,
+        appOverdue: true,
+        desktopNewTickets: false,
+        desktopEscalations: false,
+        desktopUrgent: true
+      };
+      
+      document.getElementById('emailNewTickets').checked = notifications.emailNewTickets;
+      document.getElementById('emailResponses').checked = notifications.emailResponses;
+      document.getElementById('emailEscalations').checked = notifications.emailEscalations;
+      document.getElementById('appNewTickets').checked = notifications.appNewTickets;
+      document.getElementById('appResponses').checked = notifications.appResponses;
+      document.getElementById('appEscalations').checked = notifications.appEscalations;
+      document.getElementById('appOverdue').checked = notifications.appOverdue;
+      document.getElementById('desktopNewTickets').checked = notifications.desktopNewTickets;
+      document.getElementById('desktopEscalations').checked = notifications.desktopEscalations;
+      document.getElementById('desktopUrgent').checked = notifications.desktopUrgent;
+      
+      // Form submission handlers
+      document.getElementById('profileForm').addEventListener('submit', saveProfile);
+      document.getElementById('availabilityForm').addEventListener('submit', saveAvailability);
+      document.getElementById('signatureForm').addEventListener('submit', saveSignature);
+      document.getElementById('notificationForm').addEventListener('submit', saveNotificationSettings);
+      
+      // Toggle availability status
+      document.getElementById('availabilityToggle').addEventListener('change', function() {
+        updateAvailabilityStatus(this.checked);
+      });
+      
+      // Avatar upload handler
+      document.getElementById('avatarUpload').addEventListener('change', handleAvatarUpload);
+    });
+
+    function updateAvailabilityStatus(isAvailable) {
+      const statusElement = document.getElementById('availabilityStatus');
+      if (isAvailable) {
+        statusElement.textContent = 'Available';
+        statusElement.className = 'text-success';
+      } else {
+        statusElement.textContent = 'Unavailable';
+        statusElement.className = 'text-danger';
+      }
+    }
+
+    function saveProfile(e) {
+      e.preventDefault();
+      
+      const currentUser = JSON.parse(localStorage.getItem('currentUser')) || {};
+      
+      currentUser.name = `${document.getElementById('firstName').value} ${document.getElementById('lastName').value}`;
+      currentUser.email = document.getElementById('email').value;
+      currentUser.phone = document.getElementById('phone').value;
+      currentUser.department = document.getElementById('department').value;
+      
+      localStorage.setItem('currentUser', JSON.stringify(currentUser));
+      
+      alert('Profile information updated successfully');
+    }
+
+    function saveAvailability(e) {
+      e.preventDefault();
+      
+      const currentUser = JSON.parse(localStorage.getItem('currentUser')) || {};
+      
+      currentUser.availability = {
+        status: document.getElementById('availabilityToggle').checked,
+        workingHours: {
+          start: document.getElementById('startTime').value,
+          end: document.getElementById('endTime').value
+        },
+        workingDays: [
+          document.getElementById('monday').checked,
+          document.getElementById('tuesday').checked,
+          document.getElementById('wednesday').checked,
+          document.getElementById('thursday').checked,
+          document.getElementById('friday').checked,
+          document.getElementById('saturday').checked,
+          document.getElementById('sunday').checked
+        ]
+      };
+      
+      localStorage.setItem('currentUser', JSON.stringify(currentUser));
+      
+      alert('Availability settings saved');
+    }
+
+    function saveSignature(e) {
+      e.preventDefault();
+      
+      const currentUser = JSON.parse(localStorage.getItem('currentUser')) || {};
+      
+      currentUser.signature = document.getElementById('signatureText').value;
+      currentUser.includeContact = document.getElementById('includeContact').checked;
+      
+      localStorage.setItem('currentUser', JSON.stringify(currentUser));
+      
+      alert('Signature saved');
+    }
+
+    function saveNotificationSettings(e) {
+      e.preventDefault();
+      
+      const currentUser = JSON.parse(localStorage.getItem('currentUser')) || {};
+      
+      currentUser.notificationSettings = {
+        emailNewTickets: document.getElementById('emailNewTickets').checked,
+        emailResponses: document.getElementById('emailResponses').checked,
+        emailEscalations: document.getElementById('emailEscalations').checked,
+        appNewTickets: document.getElementById('appNewTickets').checked,
+        appResponses: document.getElementById('appResponses').checked,
+        appEscalations: document.getElementById('appEscalations').checked,
+        appOverdue: document.getElementById('appOverdue').checked,
+        desktopNewTickets: document.getElementById('desktopNewTickets').checked,
+        desktopEscalations: document.getElementById('desktopEscalations').checked,
+        desktopUrgent: document.getElementById('desktopUrgent').checked
+      };
+      
+      localStorage.setItem('currentUser', JSON.stringify(currentUser));
+      
+      alert('Notification preferences saved');
+    }
+
+    function handleAvatarUpload(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      
+      // In a real app, you would upload the file to a server
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        const currentUser = JSON.parse(localStorage.getItem('currentUser')) || {};
+        currentUser.avatar = event.target.result;
+        localStorage.setItem('currentUser', JSON.stringify(currentUser));
+        
+        alert('Profile picture updated');
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function logout() {
+      localStorage.removeItem('currentUser');
+      window.location.href = 'login.html';
+    }
+  </script>
+</body>
+</html>

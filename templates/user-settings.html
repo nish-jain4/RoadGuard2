@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Account Settings - QuickDesk</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    .settings-card {
+      border-left: 3px solid #4e73df;
+    }
+    .nav-pills .nav-link.active {
+      background-color: #4e73df;
+    }
+    .nav-pills .nav-link {
+      color: #4e73df;
+    }
+  </style>
+</head>
+<body class="bg-light">
+  <!-- Navigation -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+      <a class="navbar-brand" href="user-dashboard.html">
+        <i class="fas fa-ticket-alt me-2"></i>QuickDesk
+      </a>
+      <div class="d-flex align-items-center">
+        <a href="user-profile.html" class="btn btn-sm btn-outline-light me-2">
+          <i class="fas fa-user"></i>
+        </a>
+        <div class="dropdown">
+          <button class="btn btn-outline-light dropdown-toggle" data-bs-toggle="dropdown">
+            <i class="fas fa-cog me-1"></i>
+            <span>Settings</span>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li><a class="dropdown-item active" href="user-settings.html"><i class="fas fa-user-cog me-2"></i>Account Settings</a></li>
+            <li><a class="dropdown-item" href="#"><i class="fas fa-bell me-2"></i>Notification Settings</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item" href="#" onclick="logout()"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="container py-5">
+    <div class="row">
+      <div class="col-lg-3">
+        <div class="card shadow-sm mb-4">
+          <div class="card-header bg-white">
+            <h6 class="mb-0">Settings</h6>
+          </div>
+          <div class="list-group list-group-flush">
+            <a href="#account" class="list-group-item list-group-item-action active" data-bs-toggle="pill">
+              <i class="fas fa-user-circle me-2"></i>Account
+            </a>
+            <a href="#security" class="list-group-item list-group-item-action" data-bs-toggle="pill">
+              <i class="fas fa-shield-alt me-2"></i>Security
+            </a>
+            <a href="#notifications" class="list-group-item list-group-item-action" data-bs-toggle="pill">
+              <i class="fas fa-bell me-2"></i>Notifications
+            </a>
+            <a href="#preferences" class="list-group-item list-group-item-action" data-bs-toggle="pill">
+              <i class="fas fa-sliders-h me-2"></i>Preferences
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-9">
+        <div class="tab-content">
+          <!-- Account Tab -->
+          <div class="tab-pane fade show active" id="account">
+            <div class="card shadow-sm settings-card">
+              <div class="card-header bg-white">
+                <h6 class="mb-0">Account Information</h6>
+              </div>
+              <div class="card-body">
+                <form id="accountForm">
+                  <div class="row mb-3">
+                    <div class="col-md-6">
+                      <label class="form-label">First Name</label>
+                      <input type="text" class="form-control" id="firstName" required>
+                    </div>
+                    <div class="col-md-6">
+                      <label class="form-label">Last Name</label>
+                      <input type="text" class="form-control" id="lastName" required>
+                    </div>
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Email</label>
+                    <input type="email" class="form-control" id="email" required>
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Phone Number</label>
+                    <input type="tel" class="form-control" id="phone">
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Profile Picture</label>
+                    <input type="file" class="form-control" id="avatarUpload" accept="image/*">
+                  </div>
+                  <button type="submit" class="btn btn-primary">Save Changes</button>
+                </form>
+              </div>
+            </div>
+          </div>
+
+          <!-- Security Tab -->
+          <div class="tab-pane fade" id="security">
+            <div class="card shadow-sm settings-card">
+              <div class="card-header bg-white">
+                <h6 class="mb-0">Security Settings</h6>
+              </div>
+              <div class="card-body">
+                <form id="securityForm">
+                  <div class="mb-3">
+                    <label class="form-label">Current Password</label>
+                    <input type="password" class="form-control" id="currentPassword" required>
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">New Password</label>
+                    <input type="password" class="form-control" id="newPassword" required>
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Confirm New Password</label>
+                    <input type="password" class="form-control" id="confirmPassword" required>
+                  </div>
+                  <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>Password must be at least 8 characters long and contain a mix of letters, numbers, and symbols.
+                  </div>
+                  <button type="submit" class="btn btn-primary">Change Password</button>
+                </form>
+              </div>
+            </div>
+          </div>
+
+          <!-- Notifications Tab -->
+          <div class="tab-pane fade" id="notifications">
+            <div class="card shadow-sm settings-card">
+              <div class="card-header bg-white">
+                <h6 class="mb-0">Notification Preferences</h6>
+              </div>
+              <div class="card-body">
+                <form id="notificationForm">
+                  <h6 class="mb-3">Email Notifications</h6>
+                  <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" id="emailTicketUpdates" checked>
+                    <label class="form-check-label" for="emailTicketUpdates">Ticket updates</label>
+                  </div>
+                  <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" id="emailResponses" checked>
+                    <label class="form-check-label" for="emailResponses">New responses</label>
+                  </div>
+                  <div class="form-check mb-3">
+                    <input class="form-check-input" type="checkbox" id="emailAnnouncements">
+                    <label class="form-check-label" for="emailAnnouncements">System announcements</label>
+                  </div>
+
+                  <h6 class="mb-3">In-App Notifications</h6>
+                  <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" id="appTicketUpdates" checked>
+                    <label class="form-check-label" for="appTicketUpdates">Ticket updates</label>
+                  </div>
+                  <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" id="appResponses" checked>
+                    <label class="form-check-label" for="appResponses">New responses</label>
+                  </div>
+                  <div class="form-check mb-3">
+                    <input class="form-check-input" type="checkbox" id="appAnnouncements" checked>
+                    <label class="form-check-label" for="appAnnouncements">System announcements</label>
+                  </div>
+
+                  <button type="submit" class="btn btn-primary">Save Preferences</button>
+                </form>
+              </div>
+            </div>
+          </div>
+
+          <!-- Preferences Tab -->
+          <div class="tab-pane fade" id="preferences">
+            <div class="card shadow-sm settings-card">
+              <div class="card-header bg-white">
+                <h6 class="mb-0">User Preferences</h6>
+              </div>
+              <div class="card-body">
+                <form id="preferencesForm">
+                  <div class="mb-3">
+                    <label class="form-label">Default Ticket Priority</label>
+                    <select class="form-select" id="defaultPriority">
+                      <option value="Low">Low</option>
+                      <option value="Medium" selected>Medium</option>
+                      <option value="High">High</option>
+                    </select>
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Preferred Language</label>
+                    <select class="form-select" id="language">
+                      <option value="en" selected>English</option>
+                      <option value="es">Spanish</option>
+                      <option value="fr">French</option>
+                      <option value="de">German</option>
+                    </select>
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Theme</label>
+                    <select class="form-select" id="theme">
+                      <option value="light" selected>Light</option>
+                      <option value="dark">Dark</option>
+                      <option value="system">System Default</option>
+                    </select>
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Timezone</label>
+                    <select class="form-select" id="timezone">
+                      <option value="UTC" selected>UTC</option>
+                      <option value="EST">Eastern Time (EST)</option>
+                      <option value="PST">Pacific Time (PST)</option>
+                    </select>
+                  </div>
+                  <button type="submit" class="btn btn-primary">Save Preferences</button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Load user settings
+    document.addEventListener('DOMContentLoaded', function() {
+      const currentUser = JSON.parse(localStorage.getItem('currentUser')) || {};
+      
+      if (!currentUser || !currentUser.email) {
+        window.location.href = 'login.html';
+        return;
+      }
+
+      // Load account info
+      if (currentUser.name) {
+        const names = currentUser.name.split(' ');
+        document.getElementById('firstName').value = names[0] || '';
+        document.getElementById('lastName').value = names.length > 1 ? names.slice(1).join(' ') : '';
+      }
+      document.getElementById('email').value = currentUser.email || '';
+      document.getElementById('phone').value = currentUser.phone || '';
+      
+      // Load notification preferences
+      const notifications = currentUser.notificationSettings || {
+        emailTicketUpdates: true,
+        emailResponses: true,
+        emailAnnouncements: false,
+        appTicketUpdates: true,
+        appResponses: true,
+        appAnnouncements: true
+      };
+      
+      document.getElementById('emailTicketUpdates').checked = notifications.emailTicketUpdates;
+      document.getElementById('emailResponses').checked = notifications.emailResponses;
+      document.getElementById('emailAnnouncements').checked = notifications.emailAnnouncements;
+      document.getElementById('appTicketUpdates').checked = notifications.appTicketUpdates;
+      document.getElementById('appResponses').checked = notifications.appResponses;
+      document.getElementById('appAnnouncements').checked = notifications.appAnnouncements;
+      
+      // Load preferences
+      const preferences = currentUser.preferences || {
+        defaultPriority: 'Medium',
+        language: 'en',
+        theme: 'light',
+        timezone: 'UTC'
+      };
+      
+      document.getElementById('defaultPriority').value = preferences.defaultPriority;
+      document.getElementById('language').value = preferences.language;
+      document.getElementById('theme').value = preferences.theme;
+      document.getElementById('timezone').value = preferences.timezone;
+      
+      // Form submission handlers
+      document.getElementById('accountForm').addEventListener('submit', saveAccountInfo);
+      document.getElementById('securityForm').addEventListener('submit', changePassword);
+      document.getElementById('notificationForm').addEventListener('submit', saveNotificationSettings);
+      document.getElementById('preferencesForm').addEventListener('submit', savePreferences);
+      
+      // Avatar upload handler
+      document.getElementById('avatarUpload').addEventListener('change', handleAvatarUpload);
+    });
+
+    function saveAccountInfo(e) {
+      e.preventDefault();
+      
+      const currentUser = JSON.parse(localStorage.getItem('currentUser')) || {};
+      
+      currentUser.name = `${document.getElementById('firstName').value} ${document.getElementById('lastName').value}`;
+      currentUser.email = document.getElementById('email').value;
+      currentUser.phone = document.getElementById('phone').value;
+      
+      localStorage.setItem('currentUser', JSON.stringify(currentUser));
+      
+      alert('Account information updated successfully');
+    }
+
+    function changePassword(e) {
+      e.preventDefault();
+      
+      const currentPassword = document.getElementById('currentPassword').value;
+      const newPassword = document.getElementById('newPassword').value;
+      const confirmPassword = document.getElementById('confirmPassword').value;
+      
+      // Validate passwords
+      if (newPassword !== confirmPassword) {
+        alert('New passwords do not match');
+        return;
+      }
+      
+      if (newPassword.length < 8) {
+        alert('Password must be at least 8 characters long');
+        return;
+      }
+      
+      // In a real app, you would verify current password and update it
+      alert('Password changed successfully');
+      
+      // Clear form
+      e.target.reset();
+    }
+
+    function saveNotificationSettings(e) {
+      e.preventDefault();
+      
+      const currentUser = JSON.parse(localStorage.getItem('currentUser')) || {};
+      
+      currentUser.notificationSettings = {
+        emailTicketUpdates: document.getElementById('emailTicketUpdates').checked,
+        emailResponses: document.getElementById('emailResponses').checked,
+        emailAnnouncements: document.getElementById('emailAnnouncements').checked,
+        appTicketUpdates: document.getElementById('appTicketUpdates').checked,
+        appResponses: document.getElementById('appResponses').checked,
+        appAnnouncements: document.getElementById('appAnnouncements').checked
+      };
+      
+      localStorage.setItem('currentUser', JSON.stringify(currentUser));
+      
+      alert('Notification preferences saved');
+    }
+
+    function savePreferences(e) {
+      e.preventDefault();
+      
+      const currentUser = JSON.parse(localStorage.getItem('currentUser')) || {};
+      
+      currentUser.preferences = {
+        defaultPriority: document.getElementById('defaultPriority').value,
+        language: document.getElementById('language').value,
+        theme: document.getElementById('theme').value,
+        timezone: document.getElementById('timezone').value
+      };
+      
+      localStorage.setItem('currentUser', JSON.stringify(currentUser));
+      
+      // Apply theme preference
+      if (currentUser.preferences.theme === 'dark') {
+        document.body.classList.add('dark-theme');
+      } else {
+        document.body.classList.remove('dark-theme');
+      }
+      
+      alert('Preferences saved');
+    }
+
+    function handleAvatarUpload(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      
+      // In a real app, you would upload the file to a server
+      // Here we'll just simulate it with a local URL
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        const currentUser = JSON.parse(localStorage.getItem('currentUser')) || {};
+        currentUser.avatar = event.target.result;
+        localStorage.setItem('currentUser', JSON.stringify(currentUser));
+        
+        // Update avatar in profile page if open
+        if (window.opener) {
+          window.opener.updateAvatar(event.target.result);
+        }
+        
+        alert('Profile picture updated');
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function logout() {
+      localStorage.removeItem('currentUser');
+      window.location.href = 'login.html';
+    }
+  </script>
+</body>
+</html>

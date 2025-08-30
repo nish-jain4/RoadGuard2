@@ -1,0 +1,448 @@
+<!-- Admin Reports Page Content -->
+<div class="main-content" id="adminReportsContent" style="display: none;">
+  <!-- Top Navigation -->
+  <nav class="navbar navbar-expand navbar-light mb-4">
+    <div class="container-fluid">
+      <button class="btn btn-link d-md-none" onclick="toggleSidebar()">
+        <i class="fas fa-bars"></i>
+      </button>
+      
+      <div class="d-none d-sm-inline-block form-inline mr-auto ml-md-3 my-2 my-md-0 mw-100 navbar-search">
+        <h4 class="mb-0"><i class="fas fa-chart-line text-primary me-2"></i> Admin Reports</h4>
+      </div>
+      
+      <div class="d-flex">
+        <select class="form-select me-2" id="adminTeamFilter">
+          <option value="all">All Teams</option>
+          <option value="support">Support Team</option>
+          <option value="sales">Sales Team</option>
+          <option value="technical">Technical Team</option>
+        </select>
+        <button class="btn btn-primary" onclick="loadAdminReports()">
+          <i class="fas fa-sync-alt"></i>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Summary Metrics -->
+  <div class="row mb-4">
+    <div class="col-xl-3 col-md-6 mb-4">
+      <div class="card metric-card h-100">
+        <div class="card-body">
+          <div class="row no-gutters align-items-center">
+            <div class="col mr-2">
+              <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                Total Tickets
+              </div>
+              <div class="h2 mb-0 font-weight-bold text-gray-800">1,248</div>
+              <div class="mt-2">
+                <span class="text-success me-2">
+                  <i class="fas fa-arrow-up"></i> 18.7%
+                </span>
+                <span class="text-muted">vs last month</span>
+              </div>
+            </div>
+            <div class="col-auto">
+              <i class="fas fa-ticket-alt fa-2x text-gray-300"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-4">
+      <div class="card metric-card h-100">
+        <div class="card-body">
+          <div class="row no-gutters align-items-center">
+            <div class="col mr-2">
+              <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                Avg. First Response
+              </div>
+              <div class="h2 mb-0 font-weight-bold text-gray-800">34m 12s</div>
+              <div class="mt-2">
+                <span class="text-danger me-2">
+                  <i class="fas fa-arrow-up"></i> 5.2%
+                </span>
+                <span class="text-muted">vs last month</span>
+              </div>
+            </div>
+            <div class="col-auto">
+              <i class="fas fa-stopwatch fa-2x text-gray-300"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-4">
+      <div class="card metric-card h-100">
+        <div class="card-body">
+          <div class="row no-gutters align-items-center">
+            <div class="col mr-2">
+              <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                SLA Compliance
+              </div>
+              <div class="h2 mb-0 font-weight-bold text-gray-800">89%</div>
+              <div class="mt-2">
+                <span class="text-success me-2">
+                  <i class="fas fa-arrow-up"></i> 2.1%
+                </span>
+                <span class="text-muted">vs last month</span>
+              </div>
+            </div>
+            <div class="col-auto">
+              <i class="fas fa-clipboard-check fa-2x text-gray-300"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-4">
+      <div class="card metric-card h-100">
+        <div class="card-body">
+          <div class="row no-gutters align-items-center">
+            <div class="col mr-2">
+              <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                Customer Satisfaction
+              </div>
+              <div class="h2 mb-0 font-weight-bold text-gray-800">4.3/5</div>
+              <div class="mt-2">
+                <span class="text-success me-2">
+                  <i class="fas fa-arrow-up"></i> 0.2
+                </span>
+                <span class="text-muted">vs last month</span>
+              </div>
+            </div>
+            <div class="col-auto">
+              <i class="fas fa-smile fa-2x text-gray-300"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Team Performance -->
+  <div class="row mb-4">
+    <div class="col-lg-8">
+      <div class="card">
+        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+          <h6 class="m-0 font-weight-bold text-primary">Team Performance Overview</h6>
+          <div class="dropdown no-arrow">
+            <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-bs-toggle="dropdown">
+              <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+            </a>
+            <div class="dropdown-menu dropdown-menu-right shadow">
+              <a class="dropdown-item" href="#">Export Data</a>
+              <a class="dropdown-item" href="#">Print Report</a>
+            </div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="chart-area">
+            <canvas id="teamPerformanceChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-lg-4">
+      <div class="card h-100">
+        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+          <h6 class="m-0 font-weight-bold text-primary">Top Performers</h6>
+          <div class="dropdown no-arrow">
+            <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-bs-toggle="dropdown">
+              <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+            </a>
+            <div class="dropdown-menu dropdown-menu-right shadow">
+              <a class="dropdown-item" href="#">View All</a>
+            </div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="mb-4">
+            <div class="d-flex align-items-center mb-3">
+              <img src="https://randomuser.me/api/portraits/women/32.jpg" class="avatar me-3" alt="Agent">
+              <div>
+                <h6 class="mb-0">Sarah Johnson</h6>
+                <small class="text-muted">Support Team</small>
+              </div>
+              <div class="ms-auto">
+                <span class="badge bg-success">4.8/5</span>
+              </div>
+            </div>
+            <div class="progress progress-thin">
+              <div class="progress-bar bg-success" role="progressbar" style="width: 96%"></div>
+            </div>
+          </div>
+          
+          <div class="mb-4">
+            <div class="d-flex align-items-center mb-3">
+              <img src="https://randomuser.me/api/portraits/men/45.jpg" class="avatar me-3" alt="Agent">
+              <div>
+                <h6 class="mb-0">Michael Chen</h6>
+                <small class="text-muted">Technical Team</small>
+              </div>
+              <div class="ms-auto">
+                <span class="badge bg-success">4.7/5</span>
+              </div>
+            </div>
+            <div class="progress progress-thin">
+              <div class="progress-bar bg-success" role="progressbar" style="width: 94%"></div>
+            </div>
+          </div>
+          
+          <div class="mb-4">
+            <div class="d-flex align-items-center mb-3">
+              <img src="https://randomuser.me/api/portraits/women/68.jpg" class="avatar me-3" alt="Agent">
+              <div>
+                <h6 class="mb-0">Emily Rodriguez</h6>
+                <small class="text-muted">Sales Team</small>
+              </div>
+              <div class="ms-auto">
+                <span class="badge bg-success">4.6/5</span>
+              </div>
+            </div>
+            <div class="progress progress-thin">
+              <div class="progress-bar bg-success" role="progressbar" style="width: 92%"></div>
+            </div>
+          </div>
+          
+          <div class="mb-4">
+            <div class="d-flex align-items-center mb-3">
+              <img src="https://randomuser.me/api/portraits/men/22.jpg" class="avatar me-3" alt="Agent">
+              <div>
+                <h6 class="mb-0">David Wilson</h6>
+                <small class="text-muted">Support Team</small>
+              </div>
+              <div class="ms-auto">
+                <span class="badge bg-success">4.5/5</span>
+              </div>
+            </div>
+            <div class="progress progress-thin">
+              <div class="progress-bar bg-success" role="progressbar" style="width: 90%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Agent Comparison -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+          <h6 class="m-0 font-weight-bold text-primary">Agent Performance Comparison</h6>
+          <div class="dropdown no-arrow">
+            <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-bs-toggle="dropdown">
+              <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+            </a>
+            <div class="dropdown-menu dropdown-menu-right shadow">
+              <a class="dropdown-item" href="#">Export Data</a>
+              <a class="dropdown-item" href="#">Print Report</a>
+            </div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th>Agent</th>
+                  <th>Team</th>
+                  <th>Tickets</th>
+                  <th>Avg. Response</th>
+                  <th>Resolution %</th>
+                  <th>CSAT</th>
+                  <th>SLA %</th>
+                  <th>Trend</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>
+                    <div class="d-flex align-items-center">
+                      <img src="https://randomuser.me/api/portraits/women/32.jpg" class="avatar me-3" alt="Agent">
+                      <div>Sarah Johnson</div>
+                    </div>
+                  </td>
+                  <td>Support</td>
+                  <td>142</td>
+                  <td>12m 34s</td>
+                  <td>92%</td>
+                  <td>4.8/5</td>
+                  <td>97%</td>
+                  <td><i class="fas fa-arrow-up text-success"></i></td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="d-flex align-items-center">
+                      <img src="https://randomuser.me/api/portraits/men/45.jpg" class="avatar me-3" alt="Agent">
+                      <div>Michael Chen</div>
+                    </div>
+                  </td>
+                  <td>Technical</td>
+                  <td>118</td>
+                  <td>18m 12s</td>
+                  <td>89%</td>
+                  <td>4.7/5</td>
+                  <td>94%</td>
+                  <td><i class="fas fa-arrow-up text-success"></i></td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="d-flex align-items-center">
+                      <img src="https://randomuser.me/api/portraits/women/68.jpg" class="avatar me-3" alt="Agent">
+                      <div>Emily Rodriguez</div>
+                    </div>
+                  </td>
+                  <td>Sales</td>
+                  <td>156</td>
+                  <td>22m 45s</td>
+                  <td>85%</td>
+                  <td>4.6/5</td>
+                  <td>91%</td>
+                  <td><i class="fas fa-arrow-up text-success"></i></td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="d-flex align-items-center">
+                      <img src="https://randomuser.me/api/portraits/men/22.jpg" class="avatar me-3" alt="Agent">
+                      <div>David Wilson</div>
+                    </div>
+                  </td>
+                  <td>Support</td>
+                  <td>134</td>
+                  <td>15m 28s</td>
+                  <td>88%</td>
+                  <td>4.5/5</td>
+                  <td>93%</td>
+                  <td><i class="fas fa-arrow-down text-danger"></i></td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="d-flex align-items-center">
+                      <img src="https://randomuser.me/api/portraits/women/54.jpg" class="avatar me-3" alt="Agent">
+                      <div>Jessica Lee</div>
+                    </div>
+                  </td>
+                  <td>Technical</td>
+                  <td>98</td>
+                  <td>28m 12s</td>
+                  <td>82%</td>
+                  <td>4.3/5</td>
+                  <td>88%</td>
+                  <td><i class="fas fa-arrow-up text-success"></i></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Ticket Analytics -->
+  <div class="row">
+    <div class="col-lg-6">
+      <div class="card h-100">
+        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+          <h6 class="m-0 font-weight-bold text-primary">Ticket Volume by Type</h6>
+          <div class="dropdown no-arrow">
+            <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-bs-toggle="dropdown">
+              <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+            </a>
+            <div class="dropdown-menu dropdown-menu-right shadow">
+              <a class="dropdown-item" href="#">View Details</a>
+            </div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="chart-area">
+            <canvas id="ticketTypeChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-lg-6">
+      <div class="card h-100">
+        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+          <h6 class="m-0 font-weight-bold text-primary">Ticket Resolution Time</h6>
+          <div class="dropdown no-arrow">
+            <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-bs-toggle="dropdown">
+              <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+            </a>
+            <div class="dropdown-menu dropdown-menu-right shadow">
+              <a class="dropdown-item" href="#">View Details</a>
+            </div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="chart-area">
+            <canvas id="resolutionTimeChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Action Items -->
+  <div class="row mt-4">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header py-3 bg-primary text-white">
+          <h6 class="m-0 font-weight-bold">Team Action Items</h6>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-4 mb-4">
+              <div class="card h-100 border-left-danger">
+                <div class="card-body">
+                  <h5 class="card-title text-danger">
+                    <i class="fas fa-exclamation-circle me-2"></i> Attention Needed
+                  </h5>
+                  <p class="card-text">3 agents with CSAT scores below 4.0</p>
+                  <a href="#" class="btn btn-sm btn-outline-danger">View Details</a>
+                </div>
+              </div>
+            </div>
+            
+            <div class="col-md-4 mb-4">
+              <div class="card h-100 border-left-warning">
+                <div class="card-body">
+                  <h5 class="card-title text-warning">
+                    <i class="fas fa-clock me-2"></i> SLA At Risk
+                  </h5>
+                  <p class="card-text">12 tickets approaching response deadline</p>
+                  <a href="#" class="btn btn-sm btn-outline-warning">View Tickets</a>
+                </div>
+              </div>
+            </div>
+            
+            <div class="col-md-4 mb-4">
+              <div class="card h-100 border-left-success">
+                <div class="card-body">
+                  <h5 class="card-title text-success">
+                    <i class="fas fa-lightbulb me-2"></i> Improvement Opportunity
+                  </h5>
+                  <p class="card-text">Billing questions have 22% higher resolution time</p>
+                  <a href="#" class="btn btn-sm btn-outline-success">View Analysis</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Footer -->
+  <footer class="mt-5 text-center text-muted small">
+    <p>Report generated on <span id="adminReportDate"></span> | Data refreshes hourly</p>
+    <p class="mb-0">Confidential - For management use only</p>
+  </footer>
+</div>

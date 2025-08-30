@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agent Profile - QuickDesk</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    .profile-header {
+      background: linear-gradient(135deg, #f6c23e 0%, #da9a00 100%);
+    }
+    .stats-card {
+      border-left: 3px solid #f6c23e;
+    }
+    .performance-chart {
+      height: 250px;
+    }
+  </style>
+</head>
+<body class="bg-light">
+  <!-- Navigation -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+      <a class="navbar-brand" href="agent-dashboard.html">
+        <i class="fas fa-ticket-alt me-2"></i>QuickDesk
+      </a>
+      <div class="d-flex align-items-center">
+        <a href="agent-settings.html" class="btn btn-sm btn-outline-light me-2">
+          <i class="fas fa-cog"></i>
+        </a>
+        <div class="dropdown">
+          <button class="btn btn-outline-light dropdown-toggle" data-bs-toggle="dropdown">
+            <i class="fas fa-user-shield me-1"></i>
+            <span id="navbar-username">Agent</span>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li><a class="dropdown-item" href="agent-profile.html"><i class="fas fa-user me-2"></i>Profile</a></li>
+            <li><a class="dropdown-item" href="agent-settings.html"><i class="fas fa-cog me-2"></i>Settings</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item" href="#" onclick="logout()"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="container py-5">
+    <div class="row">
+      <div class="col-lg-4">
+        <!-- Profile Card -->
+        <div class="card shadow-sm mb-4">
+          <div class="profile-header text-center py-4 rounded-top">
+            <div class="avatar-upload mx-auto mb-3">
+              <img id="avatar-preview" src="https://ui-avatars.com/api/?name=Agent&background=fff&color=da9a00" 
+                   class="avatar-preview rounded-circle" width="150" height="150">
+            </div>
+            <h4 id="profile-name" class="text-white mb-1">Jane Smith</h4>
+            <p class="text-white-50 mb-3">agent@example.com</p>
+            <span class="badge bg-light text-dark mb-4">Support Agent</span>
+          </div>
+          <div class="card-body">
+            <div class="d-flex justify-content-between mb-3">
+              <span><i class="fas fa-calendar-alt me-2 text-muted"></i>Member since</span>
+              <strong id="member-since">Mar 2022</strong>
+            </div>
+            <div class="d-flex justify-content-between mb-3">
+              <span><i class="fas fa-ticket-alt me-2 text-muted"></i>Assigned Tickets</span>
+              <strong id="assigned-tickets">42</strong>
+            </div>
+            <div class="d-flex justify-content-between">
+              <span><i class="fas fa-check-circle me-2 text-muted"></i>Resolved</span>
+              <strong id="resolved-tickets">36</strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- Performance Chart -->
+        <div class="card shadow-sm mb-4">
+          <div class="card-header bg-white">
+            <h6 class="mb-0">This Month</h6>
+          </div>
+          <div class="card-body">
+            <div class="performance-chart">
+              <canvas id="monthlyChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-8">
+        <!-- Stats Cards -->
+        <div class="row mb-4">
+          <div class="col-md-4 mb-3">
+            <div class="card stats-card h-100">
+              <div class="card-body">
+                <h6 class="text-uppercase text-muted small">Open Tickets</h6>
+                <h3 class="mb-0" id="open-tickets">5</h3>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4 mb-3">
+            <div class="card stats-card h-100">
+              <div class="card-body">
+                <h6 class="text-uppercase text-muted small">Avg. Response</h6>
+                <h3 class="mb-0" id="avg-response">2h</h3>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4 mb-3">
+            <div class="card stats-card h-100">
+              <div class="card-body">
+                <h6 class="text-uppercase text-muted small">Satisfaction</h6>
+                <h3 class="mb-0" id="satisfaction-rate">92%</h3>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Assigned Tickets -->
+        <div class="card shadow-sm">
+          <div class="card-header bg-white d-flex justify-content-between align-items-center">
+            <h6 class="mb-0">Recently Assigned Tickets</h6>
+            <a href="agent-dashboard.html" class="btn btn-sm btn-outline-primary">View All</a>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-hover">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Subject</th>
+                    <th>Status</th>
+                    <th>Created</th>
+                  </tr>
+                </thead>
+                <tbody id="assigned-tickets-list">
+                  <!-- Tickets will be loaded here -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    // Load agent data
+    document.addEventListener('DOMContentLoaded', function() {
+      const currentUser = JSON.parse(localStorage.getItem('currentUser')) || {};
+      
+      if (!currentUser || !currentUser.email || currentUser.role !== 'agent') {
+        window.location.href = 'login.html';
+        return;
+      }
+
+      // Set profile data
+      document.getElementById('profile-name').textContent = currentUser.name || 'Agent';
+      document.getElementById('navbar-username').textContent = currentUser.name || 'Agent';
+      
+      // Set avatar
+      const avatarUrl = currentUser.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.name || 'Agent')}&background=f6c23e&color=fff`;
+      document.getElementById('avatar-preview').src = avatarUrl;
+
+      // Load agent stats
+      loadAgentStats(currentUser.email);
+      
+      // Initialize chart
+      initMonthlyChart();
+    });
+
+    function loadAgentStats(email) {
+      // Simulated data - in a real app, this would come from an API
+      const tickets = JSON.parse(localStorage.getItem('tickets')) || [];
+      const agentTickets = tickets.filter(t => t.assignedTo === email);
+      
+      document.getElementById('assigned-tickets').textContent = agentTickets.length;
+      document.getElementById('resolved-tickets').textContent = agentTickets.filter(t => t.status === 'Resolved').length;
+      document.getElementById('open-tickets').textContent = agentTickets.filter(t => t.status === 'Open').length;
+      
+      // Set member since date
+      if (currentUser.createdAt) {
+        const joinDate = new Date(currentUser.createdAt);
+        document.getElementById('member-since').textContent = joinDate.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+      }
+      
+      // Load assigned tickets
+      loadAssignedTickets(email);
+    }
+
+    function loadAssignedTickets(email) {
+      const tickets = JSON.parse(localStorage.getItem('tickets')) || [];
+      const agentTickets = tickets.filter(t => t.assignedTo === email)
+                                 .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+                                 .slice(0, 5);
+      
+      const ticketsContainer = document.getElementById('assigned-tickets-list');
+      ticketsContainer.innerHTML = '';
+      
+      if (agentTickets.length === 0) {
+        ticketsContainer.innerHTML = '<tr><td colspan="4" class="text-center py-3">No assigned tickets</td></tr>';
+        return;
+      }
+      
+      agentTickets.forEach(ticket => {
+        const row = document.createElement('tr');
+        row.className = 'clickable-row';
+        row.style.cursor = 'pointer';
+        row.onclick = () => window.location.href = `ticket-details.html?id=${ticket.id}`;
+        row.innerHTML = `
+          <td>${ticket.id}</td>
+          <td>${ticket.subject}</td>
+          <td><span class="badge ${ticket.status === 'Open' ? 'bg-primary' : ticket.status === 'Resolved' ? 'bg-success' : 'bg-warning'}">${ticket.status}</span></td>
+          <td>${new Date(ticket.createdAt).toLocaleDateString()}</td>
+        `;
+        ticketsContainer.appendChild(row);
+      });
+    }
+
+    function initMonthlyChart() {
+      const ctx = document.getElementById('monthlyChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+          datasets: [{
+            label: 'Tickets Resolved',
+            data: [8, 12, 9, 7],
+            backgroundColor: 'rgba(246, 194, 62, 0.7)',
+            borderColor: 'rgba(246, 194, 62, 1)',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true
+            }
+          }
+        }
+      });
+    }
+
+    function logout() {
+      localStorage.removeItem('currentUser');
+      window.location.href = 'login.html';
+    }
+  </script>
+</body>
+</html>

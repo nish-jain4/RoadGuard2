@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Settings - QuickDesk</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    .settings-card {
+      border-left: 3px solid #e74a3b;
+    }
+    .nav-pills .nav-link.active {
+      background-color: #e74a3b;
+    }
+    .nav-pills .nav-link {
+      color: #e74a3b;
+    }
+    .sla-input {
+      max-width: 100px;
+    }
+  </style>
+</head>
+<body class="bg-light">
+  <!-- Navigation -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+      <a class="navbar-brand" href="admin-dashboard.html">
+        <i class="fas fa-ticket-alt me-2"></i>QuickDesk
+      </a>
+      <div class="d-flex align-items-center">
+        <a href="admin-profile.html" class="btn btn-sm btn-outline-light me-2">
+          <i class="fas fa-user"></i>
+        </a>
+        <div class="dropdown">
+          <button class="btn btn-outline-light dropdown-toggle" data-bs-toggle="dropdown">
+            <i class="fas fa-cog me-1"></i>
+            <span>Settings</span>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li><a class="dropdown-item active" href="admin-settings.html"><i class="fas fa-user-cog me-2"></i>Admin Settings</a></li>
+            <li><a class="dropdown-item" href="#"><i class="fas fa-bell me-2"></i>Notification Settings</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item" href="#" onclick="logout()"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="container py-5">
+    <div class="row">
+      <div class="col-lg-3">
+        <div class="card shadow-sm mb-4">
+          <div class="card-header bg-white">
+            <h6 class="mb-0">Admin Settings</h6>
+          </div>
+          <div class="list-group list-group-flush">
+            <a href="#system" class="list-group-item list-group-item-action active" data-bs-toggle="pill">
+              <i class="fas fa-cog me-2"></i>System Settings
+            </a>
+            <a href="#sla" class="list-group-item list-group-item-action" data-bs-toggle="pill">
+              <i class="fas fa-stopwatch me-2"></i>SLA Policies
+            </a>
+            <a href="#templates" class="list-group-item list-group-item-action" data-bs-toggle="pill">
+              <i class="fas fa-file-alt me-2"></i>Response Templates
+            </a>
+            <a href="#security" class="list-group-item list-group-item-action" data-bs-toggle="pill">
+              <i class="fas fa-shield-alt me-2"></i>Security
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-9">
+        <div class="tab-content">
+          <!-- System Settings Tab -->
+          <div class="tab-pane fade show active" id="system">
+            <div class="card shadow-sm settings-card">
+              <div class="card-header bg-white">
+                <h6 class="mb-0">System Configuration</h6>
+              </div>
+              <div class="card-body">
+                <form id="systemForm">
+                  <div class="mb-3">
+                    <label class="form-label">System Name</label>
+                    <input type="text" class="form-control" id="systemName" value="QuickDesk" required>
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Default Timezone</label>
+                    <select class="form-select" id="timezone">
+                      <option value="UTC" selected>UTC</option>
+                      <option value="EST">Eastern Time (EST)</option>
+                      <option value="PST">Pacific Time (PST)</option>
+                      <option value="GMT">GMT</option>
+                    </select>
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Default Language</label>
+                    <select class="form-select" id="language">
+                      <option value="en" selected>English</option>
+                      <option value="es">Spanish</option>
+                      <option value="fr">French</option>
+                      <option value="de">German</option>
+                    </select>
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">System Theme</label>
+                    <select class="form-select" id="theme">
+                      <option value="light" selected>Light</option>
+                      <option value="dark">Dark</option>
+                      <option value="auto">Auto (System Preference)</option>
+                    </select>
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Ticket Auto-Assignment</label>
+                    <select class="form-select" id="autoAssignment">
+                      <option value="round-robin" selected>Round Robin</option>
+                      <option value="load-balance">Load Balance</option>
+                      <option value="manual">Manual</option>
+                    </select>
+                  </div>
+                  <div class="mb-3">
+                    <div class="form-check">
+                      <input class="form-check-input" type="checkbox" id="emailNotifications" checked>
+                      <label class="form-check-label" for="emailNotifications">Enable Email Notifications</label>
+                    </div>
+                  </div>
+                  <button type="submit" class="btn btn-primary">Save Settings</button>
+                </form>
+              </div>
+            </div>
+          </div>
+
+          <!-- SLA Policies Tab -->
+          <div class="tab-pane fade" id="sla">
+            <div class="card shadow-sm settings-card">
+              <div class="card-header bg-white">
+                <h6 class="mb-0">Service Level Agreements</h6>
+              </div>
+              <div class="card-body">
+                <form id="slaForm">
+                  <h6 class="mb-3">Response Times</h6>
+                  <div class="row mb-3">
+                    <div class="col-md-4">
+                      <label class="form-label">Critical Priority</label>
+                      <div class="input-group">
+                        <input type="number" class="form-control sla-input" id="criticalResponse" value="1" min="1">
+                        <span class="input-group-text">hours</span>
+                      </div>
+                    </div>
+                    <div class="col-md-4">
+                      <label class="form-label">High Priority</label>
+                      <div class="input-group">
+                        <input type="number" class="form-control sla-input" id="highResponse" value="4" min="1">
+                        <span class="input-group-text">hours</span>
+                      </div>
+                    </div>
+                    <div class="col-md-4">
+                      <label class="form-label">Medium Priority</label>
+                      <div class="input-group">
+                        <input type="number" class="form-control sla-input" id="mediumResponse" value="8" min="1">
+                        <span class="input-group-text">hours</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <h6 class="mb-3">Resolution Times</h6>
+                  <div class="row mb-3">
+                    <div class="col-md-4">
+                      <label class="form-label">Critical Priority</label>
+                      <div class="input-group">
+                        <input type="number" class="form-control sla-input" id="criticalResolution" value="24" min="1">
+                        <span class="input-group-text">hours</span>
+                      </div>
+                    </div>
+                    <div class="col-md-4">
+                      <label class="form-label">High Priority</label>
+                      <div class="input-group">
+                        <input type="number" class="form-control sla-input" id="highResolution" value="48" min="1">
+                        <span class="input-group-text">hours</span>
+                      </div>
+                    </div>
+                    <div class="col-md-4">
+                      <label class="form-label">Medium Priority</label>
+                      <div class="input-group">
+                        <input type="number" class="form-control sla-input" id="mediumResolution" value="72" min="1">
+                        <span class="input-group-text">hours</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div class="mb-3">
+                    <div class="form-check">
+                      <input class="form-check-input" type="checkbox" id="businessHoursOnly" checked>
+                      <label class="form-check-label" for="businessHoursOnly">Count business hours only</label>
+                    </div>
+                  </div>
+                  
+                  <button type="submit" class="btn btn-primary">Save SLA Policies</button>
+                </form>
+              </div>
+            </div>
+          </div>
+
+          <!-- Response Templates Tab -->
+          <div class="tab-pane fade" id="templates">
+            <div class="card shadow-sm settings-card">
+              <div class="card-header bg-white">
+                <h6 class="mb-0">Response Templates</h6>
+              </div>
+              <div class="card-body">
+                <form id="templatesForm">
+                  <div class="mb-3">
+                    <label class="form-label">New Ticket Acknowledgement</label>
+                    <textarea class="form-control" id="acknowledgementTemplate" rows="5"></textarea>
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Resolution Message</label>
+                    <textarea class="form-control" id="resolutionTemplate" rows="5"></textarea>
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Follow-up Request</label>
+                    <textarea class="form-control" id="followupTemplate" rows="5"></textarea>
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Closing Message</label>
+                    <textarea class="form-control" id="closingTemplate" rows="5"></textarea>
+                  </div>
+                  <button type="submit" class="btn btn-primary">Save Templates</button>
+                </form>
+              </div>
+            </div>
+          </div>
+
+          <!-- Security Tab -->
+          <div class="tab-pane fade" id="security">
+            <div class="card shadow-sm settings-card">
+              <div class="card-header bg-white">
+                <h6 class="mb-0">Security Settings</h6>
+              </div>
+              <div class="card-body">
+                <form id="securityForm">
+                  <div class="mb-3">
+                    <label class="form-label">Password Policy</label>
+                    <select class="form-select" id="passwordPolicy">
+                      <option value="basic">Basic (6 characters minimum)</option>
+                      <option value="medium" selected>Medium (8 characters, letters & numbers)</option>
+                      <option value="strong">Strong (10 characters, mixed case, numbers & symbols)</option>
+                    </select>
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Session Timeout</label>
+                    <select class="form-select" id="sessionTimeout">
+                      <option value="15">15 minutes</option>
+                      <option value="30" selected>30 minutes</option>
+                      <option value="60">1 hour</option>
+                      <option value="120">2 hours</option>
+                      <option value="0">Never (not recommended)</option>
+                    </select>
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Two-Factor Authentication</label>
+                    <select class="form-select" id="twoFactor">
+                      <option value="none">Not required</option>
+                      <option value="admin">Admins only</option>
+                      <option value="all" selected>All users</option>
+                    </select>
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Failed Login Attempts</label>
+                    <select class="form-select" id="failedAttempts">
+                      <option value="3">3 attempts</option>
+                      <option value="5" selected>5 attempts</option>
+                      <option value="10">10 attempts</option>
+                    </select>
+                  </div>
+                  <div class="mb-3">
+                    <div class="form-check">
+                      <input class="form-check-input" type="checkbox" id="ipRestriction">
+                      <label class="form-check-label" for="ipRestriction">Enable IP restrictions</label>
+                    </div>
+                  </div>
+                  <button type="submit" class="btn btn-primary">Save Security Settings</button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Load admin settings
+    document.addEventListener('DOMContentLoaded', function() {
+      const currentUser = JSON.parse(localStorage.getItem('currentUser')) || {};
+      
+      if (!currentUser || !currentUser.email || currentUser.role !== 'admin') {
+        window.location.href = 'login.html';
+        return;
+      }
+
+      // Load system settings
+      const systemSettings = JSON.parse(localStorage.getItem('systemSettings')) || {
+        systemName: 'QuickDesk',
+        timezone: 'UTC',
+        language: 'en',
+        theme: 'light',
+        autoAssignment: 'round-robin',
+        emailNotifications: true
+      };
+      
+      document.getElementById('systemName').value = systemSettings.systemName;
+      document.getElementById('timezone').value = systemSettings.timezone;
+      document.getElementById('language').value = systemSettings.language;
+      document.getElementById('theme').value = systemSettings.theme;
+      document.getElementById('autoAssignment').value = systemSettings.autoAssignment;
+      document.getElementById('emailNotifications').checked = systemSettings.emailNotifications;
+      
+      // Load SLA settings
+      const slaSettings = JSON.parse(localStorage.getItem('slaSettings')) || {
+        criticalResponse: 1,
+        highResponse: 4,
+        mediumResponse: 8,
+        criticalResolution: 24,
+        highResolution: 48,
+        mediumResolution: 72,
+        businessHoursOnly: true
+      };
+      
+      document.getElementById('criticalResponse').value = slaSettings.criticalResponse;
+      document.getElementById('highResponse').value = slaSettings.highResponse;
+      document.getElementById('mediumResponse').value = slaSettings.mediumResponse;
+      document.getElementById('criticalResolution').value = slaSettings.criticalResolution;
+      document.getElementById('highResolution').value = slaSettings.highResolution;
+      document.getElementById('mediumResolution').value = slaSettings.mediumResolution;
+      document.getElementById('businessHoursOnly').checked = slaSettings.businessHoursOnly;
+      
+      // Load template settings
+      const templateSettings = JSON.parse(localStorage.getItem('templateSettings')) || {
+        acknowledgement: 'Thank you for contacting support. Your ticket has been received and will be processed shortly.',
+        resolution: 'We believe this issue has been resolved. Please let us know if you need any further assistance.',
+        followup: 'Could you please provide more information about this issue?',
+        closing: 'This ticket has been closed. If you have any further questions, please open a new ticket.'
+      };
+      
+      document.getElementById('acknowledgementTemplate').value = templateSettings.acknowledgement;
+      document.getElementById('resolutionTemplate').value = templateSettings.resolution;
+      document.getElementById('followupTemplate').value = templateSettings.followup;
+      document.getElementById('closingTemplate').value = templateSettings.closing;
+      
+      // Load security settings
+      const securitySettings = JSON.parse(localStorage.getItem('securitySettings')) || {
+        passwordPolicy: 'medium',
+        sessionTimeout: '30',
+        twoFactor: 'all',
+        failedAttempts: '5',
+        ipRestriction: false
+      };
+      
+      document.getElementById('passwordPolicy').value = securitySettings.passwordPolicy;
+      document.getElementById('sessionTimeout').value = securitySettings.sessionTimeout;
+      document.getElementById('twoFactor').value = securitySettings.twoFactor;
+      document.getElementById('failedAttempts').value = securitySettings.failedAttempts;
+      document.getElementById('ipRestriction').checked = securitySettings.ipRestriction;
+      
+      // Form submission handlers
+      document.getElementById('systemForm').addEventListener('submit', saveSystemSettings);
+      document.getElementById('slaForm').addEventListener('submit', saveSlaSettings);
+      document.getElementById('templatesForm').addEventListener('submit', saveTemplateSettings);
+      document.getElementById('securityForm').addEventListener('submit', saveSecuritySettings);
+    });
+
+    function saveSystemSettings(e) {
+      e.preventDefault();
+      
+      const systemSettings = {
+        systemName: document.getElementById('systemName').value,
+        timezone: document.getElementById('timezone').value,
+        language: document.getElementById('language').value,
+        theme: document.getElementById('theme').value,
+        autoAssignment: document.getElementById('autoAssignment').value,
+        emailNotifications: document.getElementById('emailNotifications').checked
+      };
+      
+      localStorage.setItem('systemSettings', JSON.stringify(systemSettings));
+      
+      alert('System settings saved');
+    }
+
+    function saveSlaSettings(e) {
+      e.preventDefault();
+      
+      const slaSettings = {
+        criticalResponse: parseInt(document.getElementById('criticalResponse').value),
+        highResponse: parseInt(document.getElementById('highResponse').value),
+        mediumResponse: parseInt(document.getElementById('mediumResponse').value),
+        criticalResolution: parseInt(document.getElementById('criticalResolution').value),
+        highResolution: parseInt(document.getElementById('highResolution').value),
+        mediumResolution: parseInt(document.getElementById('mediumResolution').value),
+        businessHoursOnly: document.getElementById('businessHoursOnly').checked
+      };
+      
+      localStorage.setItem('slaSettings', JSON.stringify(slaSettings));
+      
+      alert('SLA policies saved');
+    }
+
+    function saveTemplateSettings(e) {
+      e.preventDefault();
+      
+      const templateSettings = {
+        acknowledgement: document.getElementById('acknowledgementTemplate').value,
+        resolution: document.getElementById('resolutionTemplate').value,
+        followup: document.getElementById('followupTemplate').value,
+        closing: document.getElementById('closingTemplate').value
+      };
+      
+      localStorage.setItem('templateSettings', JSON.stringify(templateSettings));
+      
+      alert('Response templates saved');
+    }
+
+    function saveSecuritySettings(e) {
+      e.preventDefault();
+      
+      const securitySettings = {
+        passwordPolicy: document.getElementById('passwordPolicy').value,
+        sessionTimeout: document.getElementById('sessionTimeout').value,
+        twoFactor: document.getElementById('twoFactor').value,
+        failedAttempts: document.getElementById('failedAttempts').value,
+        ipRestriction: document.getElementById('ipRestriction').checked
+      };
+      
+      localStorage.setItem('securitySettings', JSON.stringify(securitySettings));
+      
+      alert('Security settings saved');
+    }
+
+    function logout() {
+      localStorage.removeItem('currentUser');
+      window.location.href = 'login.html';
+    }
+  </script>
+</body>
+</html>

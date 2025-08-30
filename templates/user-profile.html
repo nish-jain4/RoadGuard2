@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Profile - QuickDesk</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    .profile-header {
+      background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
+    }
+    .avatar-upload {
+      position: relative;
+      max-width: 200px;
+    }
+    .avatar-upload .avatar-preview {
+      border: 3px solid #fff;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    .stats-card {
+      border-left: 3px solid #4e73df;
+    }
+  </style>
+</head>
+<body class="bg-light">
+  <!-- Navigation -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+      <a class="navbar-brand" href="user-dashboard.html">
+        <i class="fas fa-ticket-alt me-2"></i>QuickDesk
+      </a>
+      <div class="d-flex align-items-center">
+        <a href="user-settings.html" class="btn btn-sm btn-outline-light me-2">
+          <i class="fas fa-cog"></i>
+        </a>
+        <div class="dropdown">
+          <button class="btn btn-outline-light dropdown-toggle" data-bs-toggle="dropdown">
+            <i class="fas fa-user-circle me-1"></i>
+            <span id="navbar-username">User</span>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li><a class="dropdown-item" href="user-profile.html"><i class="fas fa-user me-2"></i>Profile</a></li>
+            <li><a class="dropdown-item" href="user-settings.html"><i class="fas fa-cog me-2"></i>Settings</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item" href="#" onclick="logout()"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="container py-5">
+    <div class="row">
+      <div class="col-lg-4">
+        <!-- Profile Card -->
+        <div class="card shadow-sm mb-4">
+          <div class="profile-header text-center py-4 rounded-top">
+            <div class="avatar-upload mx-auto mb-3">
+              <img id="avatar-preview" src="https://ui-avatars.com/api/?name=User&background=fff&color=4e73df" 
+                   class="avatar-preview rounded-circle" width="150" height="150">
+            </div>
+            <h4 id="profile-name" class="text-white mb-1">John Doe</h4>
+            <p class="text-white-50 mb-3">user@example.com</p>
+            <span class="badge bg-light text-dark mb-4">Standard User</span>
+          </div>
+          <div class="card-body">
+            <div class="d-flex justify-content-between mb-3">
+              <span><i class="fas fa-calendar-alt me-2 text-muted"></i>Member since</span>
+              <strong id="member-since">Jan 2023</strong>
+            </div>
+            <div class="d-flex justify-content-between mb-3">
+              <span><i class="fas fa-ticket-alt me-2 text-muted"></i>Tickets</span>
+              <strong id="total-tickets">12</strong>
+            </div>
+            <div class="d-flex justify-content-between">
+              <span><i class="fas fa-check-circle me-2 text-muted"></i>Resolved</span>
+              <strong id="resolved-tickets">8</strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Links -->
+        <div class="card shadow-sm">
+          <div class="card-header bg-white">
+            <h6 class="mb-0">Quick Actions</h6>
+          </div>
+          <div class="list-group list-group-flush">
+            <a href="user-dashboard.html" class="list-group-item list-group-item-action">
+              <i class="fas fa-tachometer-alt me-2 text-primary"></i>Dashboard
+            </a>
+            <a href="create-ticket.html" class="list-group-item list-group-item-action">
+              <i class="fas fa-plus-circle me-2 text-success"></i>New Ticket
+            </a>
+            <a href="user-settings.html" class="list-group-item list-group-item-action">
+              <i class="fas fa-cog me-2 text-warning"></i>Account Settings
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-8">
+        <!-- Activity Stats -->
+        <div class="row mb-4">
+          <div class="col-md-4 mb-3">
+            <div class="card stats-card h-100">
+              <div class="card-body">
+                <h6 class="text-uppercase text-muted small">Open Tickets</h6>
+                <h3 class="mb-0" id="open-tickets">3</h3>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4 mb-3">
+            <div class="card stats-card h-100">
+              <div class="card-body">
+                <h6 class="text-uppercase text-muted small">In Progress</h6>
+                <h3 class="mb-0" id="progress-tickets">1</h3>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4 mb-3">
+            <div class="card stats-card h-100">
+              <div class="card-body">
+                <h6 class="text-uppercase text-muted small">Avg. Response</h6>
+                <h3 class="mb-0" id="avg-response">4h</h3>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="card shadow-sm">
+          <div class="card-header bg-white d-flex justify-content-between align-items-center">
+            <h6 class="mb-0">Recent Activity</h6>
+            <a href="user-dashboard.html" class="btn btn-sm btn-outline-primary">View All</a>
+          </div>
+          <div class="card-body">
+            <div class="list-group list-group-flush" id="recent-activity">
+              <!-- Activity items will be loaded here -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Load user data
+    document.addEventListener('DOMContentLoaded', function() {
+      const currentUser = JSON.parse(localStorage.getItem('currentUser')) || {};
+      
+      if (!currentUser || !currentUser.email) {
+        window.location.href = 'login.html';
+        return;
+      }
+
+      // Set profile data
+      document.getElementById('profile-name').textContent = currentUser.name || 'User';
+      document.getElementById('navbar-username').textContent = currentUser.name || 'User';
+      
+      // Set avatar
+      const avatarUrl = currentUser.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.name || 'User')}&background=4e73df&color=fff`;
+      document.getElementById('avatar-preview').src = avatarUrl;
+
+      // Load user stats (in a real app, this would come from an API)
+      loadUserStats(currentUser.email);
+    });
+
+    function loadUserStats(email) {
+      // Simulated data - in a real app, this would come from an API
+      const tickets = JSON.parse(localStorage.getItem('tickets')) || [];
+      const userTickets = tickets.filter(t => t.createdBy === email);
+      
+      document.getElementById('total-tickets').textContent = userTickets.length;
+      document.getElementById('resolved-tickets').textContent = userTickets.filter(t => t.status === 'Resolved').length;
+      document.getElementById('open-tickets').textContent = userTickets.filter(t => t.status === 'Open').length;
+      document.getElementById('progress-tickets').textContent = userTickets.filter(t => t.status === 'In Progress').length;
+      
+      // Set member since date
+      const currentUser = JSON.parse(localStorage.getItem('currentUser')) || {};
+      if (currentUser.createdAt) {
+        const joinDate = new Date(currentUser.createdAt);
+        document.getElementById('member-since').textContent = joinDate.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+      }
+      
+      // Load recent activity
+      loadRecentActivity(email);
+    }
+
+    function loadRecentActivity(email) {
+      const tickets = JSON.parse(localStorage.getItem('tickets')) || [];
+      const userTickets = tickets.filter(t => t.createdBy === email)
+                                .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))
+                                .slice(0, 5);
+      
+      const activityContainer = document.getElementById('recent-activity');
+      activityContainer.innerHTML = '';
+      
+      if (userTickets.length === 0) {
+        activityContainer.innerHTML = '<div class="text-center py-3 text-muted">No recent activity</div>';
+        return;
+      }
+      
+      userTickets.forEach(ticket => {
+        const activityItem = document.createElement('a');
+        activityItem.className = 'list-group-item list-group-item-action';
+        activityItem.href = `ticket-details.html?id=${ticket.id}`;
+        activityItem.innerHTML = `
+          <div class="d-flex w-100 justify-content-between">
+            <h6 class="mb-1">${ticket.subject}</h6>
+            <small>${new Date(ticket.updatedAt).toLocaleDateString()}</small>
+          </div>
+          <p class="mb-1 small text-muted">${ticket.description.substring(0, 60)}${ticket.description.length > 60 ? '...' : ''}</p>
+          <small><span class="badge ${ticket.status === 'Open' ? 'bg-primary' : ticket.status === 'Resolved' ? 'bg-success' : 'bg-warning'}">${ticket.status}</span></small>
+        `;
+        activityContainer.appendChild(activityItem);
+      });
+    }
+
+    function logout() {
+      localStorage.removeItem('currentUser');
+      window.location.href = 'login.html';
+    }
+  </script>
+</body>
+</html>

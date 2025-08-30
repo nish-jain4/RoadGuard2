@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QuickDesk - Agent Dashboard</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary-color: #4e73df;
+      --primary-hover: #3a5ec0;
+      --success-color: #1cc88a;
+      --warning-color: #f6c23e;
+      --danger-color: #e74a3b;
+      --info-color: #36b9cc;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f8f9fc;
+    }
+    
+    .sidebar {
+      height: 100vh;
+      position: fixed;
+      background: linear-gradient(180deg, var(--primary-color) 10%, #224abe 100%);
+      color: white;
+      width: 14rem;
+      transition: all 0.3s;
+    }
+    
+    .main-content {
+      margin-left: 14rem;
+      padding: 2rem;
+      transition: all 0.3s;
+    }
+    
+    .card {
+      border: none;
+      border-radius: 0.35rem;
+      box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.1);
+      margin-bottom: 1.5rem;
+    }
+    
+    .ticket-card {
+      transition: all 0.2s;
+      border-left: 0.25rem solid var(--primary-color);
+      margin-bottom: 1rem;
+    }
+    
+    .ticket-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+    }
+    
+    .status-badge {
+      font-weight: 600;
+      padding: 0.25rem 0.5rem;
+      border-radius: 0.25rem;
+      font-size: 0.75rem;
+    }
+    
+    .status-open {
+      background-color: rgba(78, 115, 223, 0.1);
+      color: var(--primary-color);
+    }
+    
+    .status-in-progress {
+      background-color: rgba(54, 185, 204, 0.1);
+      color: var(--info-color);
+    }
+    
+    .status-resolved {
+      background-color: rgba(28, 200, 138, 0.1);
+      color: var(--success-color);
+    }
+    
+    .status-closed {
+      background-color: rgba(231, 74, 59, 0.1);
+      color: var(--danger-color);
+    }
+    
+    .priority-high {
+      color: var(--danger-color);
+      font-weight: bold;
+    }
+    
+    .priority-medium {
+      color: var(--warning-color);
+      font-weight: bold;
+    }
+    
+    .priority-low {
+      color: var(--success-color);
+      font-weight: bold;
+    }
+    
+    .sidebar-link {
+      color: rgba(255, 255, 255, 0.8);
+      padding: 1rem;
+      display: block;
+      text-decoration: none;
+      transition: all 0.3s;
+    }
+    
+    .sidebar-link:hover, .sidebar-link.active {
+      color: white;
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+    
+    .sidebar-link i {
+      margin-right: 0.5rem;
+    }
+    
+    .sidebar-divider {
+      border-top: 1px solid rgba(255, 255, 255, 0.15);
+      margin: 1rem 0;
+    }
+    
+    .avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+    
+    .conversation-bubble {
+      max-width: 80%;
+      padding: 0.75rem 1rem;
+      border-radius: 1rem;
+      margin-bottom: 0.5rem;
+    }
+    
+    .user-message {
+      background-color: #f1f1f1;
+      align-self: flex-start;
+    }
+    
+    .agent-message {
+      background-color: var(--primary-color);
+      color: white;
+      align-self: flex-end;
+    }
+    
+    @media (max-width: 768px) {
+      .sidebar {
+        width: 0;
+        overflow: hidden;
+      }
+      
+      .main-content {
+        margin-left: 0;
+      }
+      
+      .sidebar.active {
+        width: 14rem;
+      }
+      
+      .main-content.active {
+        margin-left: 14rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Sidebar -->
+  <div class="sidebar" id="sidebar">
+    <div class="text-center py-4">
+      <h4 class="text-white">QuickDesk</h4>
+      <p class="text-white-50 small">Agent Portal</p>
+    </div>
+    
+    <div class="sidebar-divider"></div>
+    
+    <a href="#" class="sidebar-link active">
+      <i class="fas fa-fw fa-tachometer-alt"></i>
+      <span>Dashboard</span>
+    </a>
+    
+    <a href="#" class="sidebar-link" onclick="loadAssignedTickets()">
+      <i class="fas fa-fw fa-ticket-alt"></i>
+      <span>My Tickets</span>
+      <span class="badge bg-danger float-end" id="myTicketsBadge">0</span>
+    </a>
+    
+    <a href="#" class="sidebar-link" onclick="loadAllTickets()">
+      <i class="fas fa-fw fa-list"></i>
+      <span>All Tickets</span>
+    </a>
+    
+    <a href="#" class="sidebar-link" onclick="loadUnassignedTickets()">
+      <i class="fas fa-fw fa-inbox"></i>
+      <span>Unassigned</span>
+      <span class="badge bg-warning float-end" id="unassignedBadge">0</span>
+    </a>
+    
+    <div class="sidebar-divider"></div>
+    
+    <a href="agent-report.html" class="sidebar-link">
+      <i class="fas fa-fw fa-chart-bar"></i>
+      <span>Reports</span>
+    </a>
+    
+    <a href="agent-settings.html" class="sidebar-link">
+      <i class="fas fa-fw fa-cog"></i>
+      <span>Settings</span>
+    </a>
+    
+    <a href="#" class="sidebar-link" onclick="logout()">
+      <i class="fas fa-fw fa-sign-out-alt"></i>
+      <span>Logout</span>
+    </a>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content" id="mainContent">
+    <!-- Top Navigation -->
+    <nav class="navbar navbar-expand navbar-light mb-4">
+      <div class="container-fluid">
+        <button class="btn btn-link d-md-none" onclick="toggleSidebar()">
+          <i class="fas fa-bars"></i>
+        </button>
+        
+        <div class="d-none d-sm-inline-block form-inline mr-auto ml-md-3 my-2 my-md-0 mw-100 navbar-search">
+          <div class="input-group">
+            <input type="text" class="form-control bg-light border-0 small" 
+                  id="searchTicket" placeholder="Search tickets..." 
+                  aria-label="Search" oninput="filterTickets()">
+            <div class="input-group-append">
+              <button class="btn btn-primary" type="button">
+                <i class="fas fa-search fa-sm"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <ul class="navbar-nav ml-auto">
+          <li class="nav-item dropdown no-arrow mx-1">
+            <a class="nav-link dropdown-toggle" href="#" id="alertsDropdown" role="button" data-bs-toggle="dropdown">
+              <i class="fas fa-bell fa-fw"></i>
+              <span class="badge badge-danger badge-counter" id="notificationBadge">3</span>
+            </a>
+            <div class="dropdown-list dropdown-menu dropdown-menu-right shadow">
+              <h6 class="dropdown-header">Alerts Center</h6>
+              <a class="dropdown-item d-flex align-items-center" href="#">
+                <div class="me-3">
+                  <div class="icon-circle bg-primary">
+                    <i class="fas fa-ticket-alt text-white"></i>
+                  </div>
+                </div>
+                <div>
+                  <span class="small text-gray-500">Just now</span>
+                  <p>New ticket assigned to you</p>
+                </div>
+              </a>
+              <a class="dropdown-item text-center small text-gray-500" href="#">Show All Alerts</a>
+            </div>
+          </li>
+          
+          <li class="nav-item dropdown no-arrow">
+            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+              <img class="avatar mr-2" id="agentAvatar" alt="Agent">
+              <span class="d-none d-lg-inline" id="agentName"></span>
+            </a>
+            <div class="dropdown-menu dropdown-menu-right shadow">
+              <a class="dropdown-item" href="agent-profile.html">
+                <i class="fas fa-user fa-sm fa-fw mr-2"></i>
+                Profile
+              </a>
+              <a class="dropdown-item" href="agent-settings.html">
+                <i class="fas fa-cogs fa-sm fa-fw mr-2"></i>
+                Settings
+              </a>
+              <div class="dropdown-divider"></div>
+              <a class="dropdown-item" href="#" onclick="logout()">
+                <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2"></i>
+                Logout
+              </a>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </nav>
+
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+      <h1 class="h3 mb-0 text-gray-800" id="pageTitle">My Tickets</h1>
+      <div>
+        <select class="form-select me-2 d-inline-block w-auto" id="filterStatus" onchange="filterTickets()">
+          <option value="">All Statuses</option>
+          <option value="Open">Open</option>
+          <option value="In Progress">In Progress</option>
+          <option value="Resolved">Resolved</option>
+          <option value="Closed">Closed</option>
+        </select>
+        <select class="form-select d-inline-block w-auto" id="filterPriority" onchange="filterTickets()">
+          <option value="">All Priorities</option>
+          <option value="High">High</option>
+          <option value="Medium">Medium</option>
+          <option value="Low">Low</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Tickets Section -->
+    <div class="row">
+      <div class="col-12">
+        <div class="card shadow">
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-hover" id="ticketsTable">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Subject</th>
+                    <th>Category</th>
+                    <th>Status</th>
+                    <th>Priority</th>
+                    <th>Created</th>
+                    <th>Customer</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="ticketsContainer">
+                  <!-- Tickets will be loaded here -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Ticket Detail Modal -->
+  <div class="modal fade" id="ticketModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="ticketModalTitle">Ticket Details</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body" id="ticketModalBody">
+          <!-- Ticket details will be loaded here -->
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary" id="saveTicketBtn" onclick="saveTicketChanges()">Save Changes</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reply Modal -->
+  <div class="modal fade" id="replyModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Reply to Ticket</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <textarea class="form-control" id="replyMessage" rows="5" placeholder="Type your reply here..."></textarea>
+          <div class="mt-2">
+            <label for="replyAttachment" class="form-label">Attachment (optional)</label>
+            <input class="form-control" type="file" id="replyAttachment">
+          </div>
+          <div class="mt-2">
+            <label class="form-check-label">
+              <input type="checkbox" class="form-check-input" id="markResolved">
+              Mark as resolved after sending
+            </label>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-primary" onclick="sendReply()">Send Reply</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Global variables
+    let allTickets = [];
+    let currentAgent = {};
+    let currentTicketId = null;
+    const ticketModal = new bootstrap.Modal(document.getElementById('ticketModal'));
+    const replyModal = new bootstrap.Modal(document.getElementById('replyModal'));
+
+    // Initialize dashboard
+    document.addEventListener('DOMContentLoaded', function() {
+      // Check authentication
+      const agentToken = localStorage.getItem('currentUser');
+      if (!agentToken) window.location.href = 'login.html';
+      
+      // Load agent data
+      currentAgent = JSON.parse(localStorage.getItem('currentUser')) || {};
+      document.getElementById('agentName').textContent = currentAgent.email || 'Agent';
+      document.getElementById('agentAvatar').src = `https://ui-avatars.com/api/?name=${encodeURIComponent(currentAgent.email || 'Agent')}&background=4e73df&color=fff`;
+      
+      // Load tickets
+      loadTickets();
+    });
+
+    // Toggle sidebar on mobile
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('active');
+      document.getElementById('mainContent').classList.toggle('active');
+    }
+
+    // Load all tickets from storage
+    function loadTickets() {
+      allTickets = JSON.parse(localStorage.getItem('tickets')) || [];
+      updateBadges();
+      loadAssignedTickets();
+    }
+
+    // Update notification badges
+    function updateBadges() {
+      const myTicketsCount = allTickets.filter(t => t.assignedTo === currentAgent.email && t.status !== 'Resolved' && t.status !== 'Closed').length;
+      const unassignedCount = allTickets.filter(t => !t.assignedTo && t.status === 'Open').length;
+      
+      document.getElementById('myTicketsBadge').textContent = myTicketsCount;
+      document.getElementById('unassignedBadge').textContent = unassignedCount;
+      document.getElementById('notificationBadge').textContent = myTicketsCount + unassignedCount;
+    }
+
+    // Load tickets assigned to current agent
+    function loadAssignedTickets() {
+      document.getElementById('pageTitle').textContent = 'My Tickets';
+      const myTickets = allTickets.filter(t => t.assignedTo === currentAgent.email);
+      renderTickets(myTickets);
+    }
+
+    // Load all tickets
+    function loadAllTickets() {
+      document.getElementById('pageTitle').textContent = 'All Tickets';
+      renderTickets(allTickets);
+    }
+
+    // Load unassigned tickets
+    function loadUnassignedTickets() {
+      document.getElementById('pageTitle').textContent = 'Unassigned Tickets';
+      const unassigned = allTickets.filter(t => !t.assignedTo && t.status === 'Open');
+      renderTickets(unassigned);
+    }
+
+    // Filter tickets based on search and filters
+    function filterTickets() {
+      const searchTerm = document.getElementById('searchTicket').value.toLowerCase();
+      const statusFilter = document.getElementById('filterStatus').value;
+      const priorityFilter = document.getElementById('filterPriority').value;
+      
+      let filtered = [...allTickets];
+      
+      // Filter by current view
+      if (document.getElementById('pageTitle').textContent === 'My Tickets') {
+        filtered = filtered.filter(t => t.assignedTo === currentAgent.email);
+      } else if (document.getElementById('pageTitle').textContent === 'Unassigned Tickets') {
+        filtered = filtered.filter(t => !t.assignedTo && t.status === 'Open');
+      }
+      
+      // Apply filters
+      if (searchTerm) {
+        filtered = filtered.filter(t => 
+          t.subject.toLowerCase().includes(searchTerm) || 
+          t.description.toLowerCase().includes(searchTerm) ||
+          t.category.toLowerCase().includes(searchTerm)
+        );
+      }
+      
+      if (statusFilter) {
+        filtered = filtered.filter(t => t.status === statusFilter);
+      }
+      
+      if (priorityFilter) {
+        filtered = filtered.filter(t => t.priority === priorityFilter);
+      }
+      
+      renderTickets(filtered);
+    }
+
+    // Render tickets to the table
+    function renderTickets(tickets) {
+      const container = document.getElementById('ticketsContainer');
+      container.innerHTML = '';
+      
+      if (tickets.length === 0) {
+        container.innerHTML = `
+          <tr>
+            <td colspan="8" class="text-center py-5">
+              <i class="fas fa-ticket-alt fa-3x text-gray-400 mb-3"></i>
+              <h5 class="text-gray-500">No tickets found</h5>
+              <p>Try adjusting your filters</p>
+            </td>
+          </tr>
+        `;
+        return;
+      }
+      
+      tickets.forEach(ticket => {
+        const row = document.createElement('tr');
+        row.className = 'ticket-card';
+        row.innerHTML = `
+          <td>${ticket.id}</td>
+          <td>
+            <strong>${ticket.subject}</strong>
+            <div class="text-muted small">${ticket.description.substring(0, 50)}${ticket.description.length > 50 ? '...' : ''}</div>
+          </td>
+          <td>${ticket.category}</td>
+          <td><span class="status-badge status-${ticket.status.toLowerCase().replace(' ', '-')}">${ticket.status}</span></td>
+          <td class="priority-${ticket.priority.toLowerCase()}">${ticket.priority}</td>
+          <td>${new Date(ticket.createdAt).toLocaleDateString()}</td>
+          <td>${ticket.createdBy || 'Customer'}</td>
+          <td>
+            <button class="btn btn-sm btn-primary" onclick="viewTicketDetails('${ticket.id}')">
+              <i class="fas fa-eye"></i>
+            </button>
+            ${!ticket.assignedTo ? `
+            <button class="btn btn-sm btn-success" onclick="assignToMe('${ticket.id}')">
+              <i class="fas fa-user-plus"></i>
+            </button>
+            ` : ''}
+          </td>
+        `;
+        container.appendChild(row);
+      });
+    }
+
+    // View ticket details
+    function viewTicketDetails(ticketId) {
+      const ticket = allTickets.find(t => t.id === ticketId);
+      if (!ticket) return;
+      
+      currentTicketId = ticketId;
+      
+      // Build modal content
+      document.getElementById('ticketModalTitle').textContent = `Ticket #${ticket.id}: ${ticket.subject}`;
+      
+      let modalBody = `
+        <div class="row mb-4">
+          <div class="col-md-6">
+            <p><strong>Status:</strong> <span class="status-badge status-${ticket.status.toLowerCase().replace(' ', '-')}">${ticket.status}</span></p>
+            <p><strong>Priority:</strong> <span class="priority-${ticket.priority.toLowerCase()}">${ticket.priority}</span></p>
+            <p><strong>Category:</strong> ${ticket.category}</p>
+          </div>
+          <div class="col-md-6">
+            <p><strong>Created:</strong> ${new Date(ticket.createdAt).toLocaleString()}</p>
+            <p><strong>Updated:</strong> ${new Date(ticket.updatedAt).toLocaleString()}</p>
+            <p><strong>Assigned To:</strong> ${ticket.assignedTo || 'Unassigned'}</p>
+          </div>
+        </div>
+        
+        <div class="card mb-4">
+          <div class="card-header">
+            <h6>Description</h6>
+          </div>
+          <div class="card-body">
+            <p>${ticket.description}</p>
+          </div>
+        </div>
+        
+        <div class="card">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <h6 class="mb-0">Conversation</h6>
+            <span class="badge bg-primary">${ticket.replies ? ticket.replies.length : 0} replies</span>
+          </div>
+          <div class="card-body">
+            <div class="d-flex flex-column" id="conversationContainer">
+              <!-- Initial ticket message -->
+              <div class="d-flex mb-3">
+                <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(ticket.createdBy || 'Customer')}&background=6c757d&color=fff" 
+                     class="avatar me-3" alt="Customer">
+                <div class="conversation-bubble user-message">
+                  <div class="d-flex justify-content-between small mb-1">
+                    <strong>${ticket.createdBy || 'Customer'}</strong>
+                    <span>${new Date(ticket.createdAt).toLocaleString()}</span>
+                  </div>
+                  <p>${ticket.description}</p>
+                </div>
+              </div>
+              
+              <!-- Replies -->
+              ${ticket.replies && ticket.replies.length > 0 ? ticket.replies.map(reply => `
+                <div class="d-flex mb-3 ${reply.by === 'agent' ? 'justify-content-end' : ''}">
+                  ${reply.by !== 'agent' ? `
+                  <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(ticket.createdBy || 'Customer')}&background=6c757d&color=fff" 
+                       class="avatar me-3" alt="Customer">
+                  ` : ''}
+                  <div class="conversation-bubble ${reply.by === 'agent' ? 'agent-message' : 'user-message'}">
+                    <div class="d-flex justify-content-between small mb-1">
+                      <strong>${reply.by === 'agent' ? 'You' : (ticket.createdBy || 'Customer')}</strong>
+                      <span>${new Date(reply.timestamp).toLocaleString()}</span>
+                    </div>
+                    <p>${reply.message}</p>
+                    ${reply.attachment ? `<a href="#" class="text-white small"><i class="fas fa-paperclip"></i> ${reply.attachment}</a>` : ''}
+                  </div>
+                  ${reply.by === 'agent' ? `
+                  <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(currentAgent.email || 'Agent')}&background=4e73df&color=fff" 
+                       class="avatar ms-3" alt="Agent">
+                  ` : ''}
+                </div>
+              `).join('') : `
+                <div class="text-center text-muted py-3">
+                  No replies yet
+                </div>
+              `}
+            </div>
+            
+            <!-- Reply form -->
+            <div class="mt-4">
+              <textarea class="form-control mb-2" id="quickReply" placeholder="Type a quick reply..."></textarea>
+              <button class="btn btn-primary me-2" onclick="quickReply()">
+                <i class="fas fa-reply"></i> Quick Reply
+              </button>
+              <button class="btn btn-outline-primary" onclick="openReplyModal()">
+                <i class="fas fa-paper-plane"></i> Full Reply
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <div class="mt-4">
+          <h6>Ticket Actions</h6>
+          <div class="btn-group">
+            <button class="btn btn-sm ${ticket.status === 'Open' ? 'btn-warning' : 'btn-outline-warning'}" 
+                    onclick="updateTicketStatus('In Progress')" ${ticket.status === 'In Progress' ? 'disabled' : ''}>
+              <i class="fas fa-spinner"></i> Mark In Progress
+            </button>
+            <button class="btn btn-sm ${ticket.status === 'Resolved' ? 'btn-success' : 'btn-outline-success'}" 
+                    onclick="updateTicketStatus('Resolved')" ${ticket.status === 'Resolved' ? 'disabled' : ''}>
+              <i class="fas fa-check"></i> Mark Resolved
+            </button>
+            <button class="btn btn-sm ${ticket.status === 'Closed' ? 'btn-danger' : 'btn-outline-danger'}" 
+                    onclick="updateTicketStatus('Closed')" ${ticket.status === 'Closed' ? 'disabled' : ''}>
+              <i class="fas fa-times"></i> Mark Closed
+            </button>
+          </div>
+        </div>
+      `;
+      
+      document.getElementById('ticketModalBody').innerHTML = modalBody;
+      ticketModal.show();
+    }
+
+    // Assign ticket to current agent
+    function assignToMe(ticketId) {
+      const index = allTickets.findIndex(t => t.id === ticketId);
+      if (index !== -1) {
+        allTickets[index].assignedTo = currentAgent.email;
+        allTickets[index].status = 'In Progress';
+        allTickets[index].updatedAt = new Date().toISOString();
+        saveTickets();
+        
+        // Show success message
+        alert(`Ticket #${ticketId} assigned to you and marked as In Progress`);
+        loadDashboard();
+      }
+    }
+
+    // Update ticket status
+    function updateTicketStatus(newStatus) {
+      const index = allTickets.findIndex(t => t.id === currentTicketId);
+      if (index !== -1) {
+        allTickets[index].status = newStatus;
+        allTickets[index].updatedAt = new Date().toISOString();
+        saveTickets();
+        
+        // Update UI
+        viewTicketDetails(currentTicketId);
+        loadDashboard();
+      }
+    }
+
+    // Quick reply to ticket
+    function quickReply() {
+      const message = document.getElementById('quickReply').value;
+      if (!message) return;
+      
+      const index = allTickets.findIndex(t => t.id === currentTicketId);
+      if (index !== -1) {
+        if (!allTickets[index].replies) allTickets[index].replies = [];
+        allTickets[index].replies.push({
+          by: 'agent',
+          message: message,
+          timestamp: new Date().toISOString()
+        });
+        
+        allTickets[index].updatedAt = new Date().toISOString();
+        saveTickets();
+        
+        // Update UI
+        viewTicketDetails(currentTicketId);
+        document.getElementById('quickReply').value = '';
+      }
+    }
+
+    // Open full reply modal
+    function openReplyModal() {
+      document.getElementById('replyMessage').value = '';
+      document.getElementById('replyAttachment').value = '';
+      document.getElementById('markResolved').checked = false;
+      replyModal.show();
+    }
+
+    // Send reply from modal
+    function sendReply() {
+      const message = document.getElementById('replyMessage').value;
+      if (!message) return;
+      
+      const index = allTickets.findIndex(t => t.id === currentTicketId);
+      if (index !== -1) {
+        if (!allTickets[index].replies) allTickets[index].replies = [];
+        
+        const reply = {
+          by: 'agent',
+          message: message,
+          timestamp: new Date().toISOString()
+        };
+        
+        // Handle attachment if any
+        const attachmentInput = document.getElementById('replyAttachment');
+        if (attachmentInput.files.length > 0) {
+          reply.attachment = attachmentInput.files[0].name;
+          // In a real app, you would upload the file here
+        }
+        
+        allTickets[index].replies.push(reply);
+        
+        // Mark as resolved if checkbox is checked
+        if (document.getElementById('markResolved').checked) {
+          allTickets[index].status = 'Resolved';
+        }
+        
+        allTickets[index].updatedAt = new Date().toISOString();
+        saveTickets();
+        
+        // Close modal and refresh
+        replyModal.hide();
+        viewTicketDetails(currentTicketId);
+        loadDashboard();
+      }
+    }
+
+    // Save tickets to localStorage
+    function saveTickets() {
+      localStorage.setItem('tickets', JSON.stringify(allTickets));
+      updateBadges();
+    }
+
+    // Logout
+    function logout() {
+      localStorage.removeItem('currentUser');
+      window.location.href = 'login.html';
+    }
+
+    // Load dashboard based on current view
+    function loadDashboard() {
+      if (document.getElementById('pageTitle').textContent === 'My Tickets') {
+        loadAssignedTickets();
+      } else if (document.getElementById('pageTitle').textContent === 'Unassigned Tickets') {
+        loadUnassignedTickets();
+      } else {
+        loadAllTickets();
+      }
+    }
+  </script>
+</body>
+</html>
