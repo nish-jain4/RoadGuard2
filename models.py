@@ -1,41 +1,55 @@
-from sqlalchemy import Column, Integer, String, Float, ForeignKey, DateTime, Boolean
-from sqlalchemy.orm import relationship
-from database import Base
+from flask_sqlalchemy import SQLAlchemy
+from flask_login import UserMixin
+from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 
-class User(Base):
-    __tablename__ = 'users'
-    id = Column(Integer, primary_key=True)
-    username = Column(String(50), unique=True)
-    email = Column(String(120), unique=True)
-    phone = Column(String(20), unique=True)
-    password_hash = Column(String(128))  # Hashed password
-    role = Column(String(20))  # 'user', 'admin', 'worker', 'workshop_owner'
-    requests = relationship('Request', backref='user', lazy=True)
+db = SQLAlchemy()
 
-class Workshop(Base):
-    __tablename__ = 'workshops'
-    id = Column(Integer, primary_key=True)
-    name = Column(String(100))
-    location_lat = Column(Float)
-    location_long = Column(Float)
-    rating = Column(Float, default=0.0)
-    status = Column(String(20), default='open')  # 'open', 'closed'
-    owner_id = Column(Integer, ForeignKey('users.id'))
-    workers = relationship('User', backref='workshop', lazy=True)  # Workers linked to workshop
+class User(UserMixin, db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(64), unique=True, nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    password_hash = db.Column(db.String(128))
+    role = db.Column(db.String(20), nullable=False, default='user')  # user, agent, admin
+    first_name = db.Column(db.String(64))
+    last_name = db.Column(db.String(64))
+    phone = db.Column(db.String(20))
+    address = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    last_login = db.Column(db.DateTime)
+    is_active = db.Column(db.Boolean, default=True)
+    
+    # Relationships
+    requests = db.relationship('ServiceRequest', backref='author', lazy='dynamic')
+    assigned_requests = db.relationship('ServiceRequest', foreign_keys='ServiceRequest.assigned_agent_id', backref='assigned_agent', lazy='dynamic')
 
-class Request(Base):
-    __tablename__ = 'requests'
-    id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey('users.id'))
-    workshop_id = Column(Integer, ForeignKey('workshops.id'), nullable=True)
-    worker_id = Column(Integer, ForeignKey('users.id'), nullable=True)
-    vehicle_info = Column(String(200))
-    service_type = Column(String(100))
-    photos = Column(String(500))  # Comma-separated URLs
-    location_lat = Column(Float)
-    location_long = Column(Float)
-    status = Column(String(20), default='pending')  # 'pending', 'assigned', 'in_progress', 'completed'
-    created_at = Column(DateTime, default=datetime.utcnow)
-    eta = Column(Integer, nullable=True)  # Minutes
-    comments = Column(String(500))
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
+
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
+
+    def get_role_dashboard(self):
+        if self.role == 'admin':
+            return 'admin_dashboard'
+        elif self.role == 'agent':
+            return 'agent_dashboard'
+        else:
+            return 'user_dashboard'
+
+    def __repr__(self):
+        return f'<User {self.username}>'
+
+class ServiceRequest(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(200), nullable=False)
+    description = db.Column(db.Text, nullable=False)
+    vehicle_type = db.Column(db.String(100))
+    vehicle_model = db.Column(db.String(100))
+    location = db.Column(db.String(200))
+    status = db.Column(db.String(20), default='pending')  # pending, in_progress, completed
+    priority = db.Column(db.String(20), default='medium')  # low, medium, high
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    assigned_agent_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
