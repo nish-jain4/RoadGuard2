@@ -1,0 +1,1802 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard - QuickDesk</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary-color: #4e73df;
+      --primary-hover: #3a5ec0;
+      --success-color: #1cc88a;
+      --danger-color: #e74a3b;
+      --warning-color: #f6c23e;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f8f9fc;
+    }
+    
+    .sidebar {
+      height: 100vh;
+      position: fixed;
+      background: linear-gradient(180deg, var(--primary-color) 10%, #224abe 100%);
+      color: white;
+      width: 14rem;
+      transition: all 0.3s;
+    }
+    
+    .main-content {
+      margin-left: 14rem;
+      padding: 2rem;
+      transition: all 0.3s;
+    }
+    
+    .card {
+      border: none;
+      border-radius: 0.35rem;
+      box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.1);
+      margin-bottom: 1.5rem;
+    }
+    
+    .card-header {
+      background-color: #f8f9fc;
+      border-bottom: 1px solid #e3e6f0;
+      font-weight: 600;
+    }
+    
+    .sidebar-link {
+      color: rgba(255, 255, 255, 0.8);
+      padding: 1rem;
+      display: block;
+      text-decoration: none;
+      transition: all 0.3s;
+    }
+    
+    .sidebar-link:hover, .sidebar-link.active {
+      color: white;
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+    
+    .sidebar-link i {
+      margin-right: 0.5rem;
+    }
+    
+    .sidebar-divider {
+      border-top: 1px solid rgba(255, 255, 255, 0.15);
+      margin: 1rem 0;
+    }
+    
+    .avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+    
+    .badge-count {
+      font-size: 0.75rem;
+      padding: 0.35em 0.65em;
+    }
+    
+    .btn-primary {
+      background-color: var(--primary-color);
+      border-color: var(--primary-color);
+    }
+    
+    .btn-primary:hover {
+      background-color: var(--primary-hover);
+      border-color: var(--primary-hover);
+    }
+    
+    .btn-danger {
+      background-color: var(--danger-color);
+      border-color: var(--danger-color);
+    }
+    
+    .btn-success {
+      background-color: var(--success-color);
+      border-color: var(--success-color);
+    }
+    
+    .status-badge {
+      font-weight: 600;
+      padding: 0.25rem 0.5rem;
+      border-radius: 0.25rem;
+      font-size: 0.75rem;
+    }
+    
+    .status-active {
+      background-color: rgba(28, 200, 138, 0.1);
+      color: var(--success-color);
+    }
+    
+    .status-inactive {
+      background-color: rgba(231, 74, 59, 0.1);
+      color: var(--danger-color);
+    }
+    
+    .role-admin {
+      color: var(--primary-color);
+      font-weight: bold;
+    }
+    
+    .role-agent {
+      color: var(--warning-color);
+      font-weight: bold;
+    }
+    
+    .role-user {
+      color: #6c757d;
+      font-weight: bold;
+    }
+    
+    @media (max-width: 768px) {
+      .sidebar {
+        width: 0;
+        overflow: hidden;
+      }
+      
+      .main-content {
+        margin-left: 0;
+      }
+      
+      .sidebar.active {
+        width: 14rem;
+      }
+      
+      .main-content.active {
+        margin-left: 14rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Sidebar -->
+  <div class="sidebar" id="sidebar">
+    <div class="text-center py-4">
+      <h4 class="text-white">QuickDesk</h4>
+      <p class="text-white-50 small">Admin Portal</p>
+    </div>
+    
+    <div class="sidebar-divider"></div>
+    
+    <a href="#" class="sidebar-link active" onclick="showSection('dashboard')">
+      <i class="fas fa-fw fa-tachometer-alt"></i>
+      <span>Dashboard</span>
+    </a>
+    
+    <a href="#" class="sidebar-link" onclick="showSection('categories')">
+      <i class="fas fa-fw fa-tags"></i>
+      <span>Categories</span>
+    </a>
+    
+    <a href="#" class="sidebar-link" onclick="showSection('users')">
+      <i class="fas fa-fw fa-users"></i>
+      <span>User Management</span>
+    </a>
+    
+    <a href="#" class="sidebar-link" onclick="showSection('tickets')">
+      <i class="fas fa-fw fa-ticket-alt"></i>
+      <span>Ticket Management</span>
+      <span class="badge bg-danger float-end" id="openTicketsBadge">0</span>
+    </a>
+    
+    <div class="sidebar-divider"></div>
+    
+    <a href="#" class="sidebar-link" onclick="showSection('reports')">
+      <i class="fas fa-fw fa-chart-bar"></i>
+      <span>Reports</span>
+      <span class="badge bg-danger float-end" id="">0</span>
+    </a>
+    
+    <a href="admin-settings.html" class="sidebar-link" onclick="showSection('settings')">
+      <i class="fas fa-fw fa-cog"></i>
+      <span>Settings</span>
+    </a>
+    
+    <a href="#" class="sidebar-link" onclick="logout()">
+      <i class="fas fa-fw fa-sign-out-alt"></i>
+      <span>Logout</span>
+    </a>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content" id="mainContent">
+    <!-- Top Navigation -->
+    <nav class="navbar navbar-expand navbar-light mb-4">
+      <div class="container-fluid">
+        <button class="btn btn-link d-md-none" onclick="toggleSidebar()">
+          <i class="fas fa-bars"></i>
+        </button>
+        
+        <div class="d-none d-sm-inline-block form-inline mr-auto ml-md-3 my-2 my-md-0 mw-100 navbar-search">
+          <div class="input-group">
+            <input type="text" class="form-control bg-light border-0 small" placeholder="Search..." id="globalSearch">
+            <div class="input-group-append">
+              <button class="btn btn-primary" type="button">
+                <i class="fas fa-search fa-sm"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <ul class="navbar-nav ml-auto">
+          <li class="nav-item dropdown no-arrow mx-1">
+            <a class="nav-link dropdown-toggle" href="#" id="alertsDropdown" role="button" data-bs-toggle="dropdown">
+              <i class="fas fa-bell fa-fw"></i>
+              <span class="badge badge-danger badge-counter">3</span>
+            </a>
+            <div class="dropdown-list dropdown-menu dropdown-menu-right shadow">
+              <h6 class="dropdown-header">Alerts Center</h6>
+              <a class="dropdown-item d-flex align-items-center" href="#">
+                <div class="me-3">
+                  <div class="icon-circle bg-primary">
+                    <i class="fas fa-ticket-alt text-white"></i>
+                  </div>
+                </div>
+                <div>
+                  <span class="small text-gray-500">Just now</span>
+                  <p>New ticket created by user</p>
+                </div>
+              </a>
+              <a class="dropdown-item text-center small text-gray-500" href="#">Show All Alerts</a>
+            </div>
+          </li>
+          
+          <li class="nav-item dropdown no-arrow">
+            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+              <img class="avatar mr-2" src="https://ui-avatars.com/api/?name=Admin&background=4e73df&color=fff" alt="Admin">
+              <span class="d-none d-lg-inline">Admin</span>
+            </a>
+            <div class="dropdown-menu dropdown-menu-right shadow">
+              <a class="dropdown-item" href="admin-profile.html">
+                <i class="fas fa-user fa-sm fa-fw mr-2"></i>
+                Profile
+              </a>
+              <a class="dropdown-item" href="admin-settings.html">
+                <i class="fas fa-cogs fa-sm fa-fw mr-2"></i>
+                Settings
+              </a>
+              <div class="dropdown-divider"></div>
+              <a class="dropdown-item" href="#" onclick="logout()">
+                <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2"></i>
+                Logout
+              </a>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </nav>
+
+    <!-- Dashboard Section -->
+    <div id="dashboard-section">
+      <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Admin Dashboard</h1>
+      </div>
+
+      <!-- Stats Cards -->
+      <div class="row">
+        <div class="col-xl-3 col-md-6 mb-4">
+          <div class="card border-left-primary shadow h-100 py-2">
+            <div class="card-body">
+              <div class="row no-gutters align-items-center">
+                <div class="col mr-2">
+                  <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                    Total Users</div>
+                  <div class="h5 mb-0 font-weight-bold text-gray-800" id="totalUsers">0</div>
+                </div>
+                <div class="col-auto">
+                  <i class="fas fa-users fa-2x text-gray-300"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-4">
+          <div class="card border-left-success shadow h-100 py-2">
+            <div class="card-body">
+              <div class="row no-gutters align-items-center">
+                <div class="col mr-2">
+                  <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                    Active Tickets</div>
+                  <div class="h5 mb-0 font-weight-bold text-gray-800" id="activeTickets">0</div>
+                </div>
+                <div class="col-auto">
+                  <i class="fas fa-ticket-alt fa-2x text-gray-300"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-4">
+          <div class="card border-left-warning shadow h-100 py-2">
+            <div class="card-body">
+              <div class="row no-gutters align-items-center">
+                <div class="col mr-2">
+                  <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                    Support Agents</div>
+                  <div class="h5 mb-0 font-weight-bold text-gray-800" id="totalAgents">0</div>
+                </div>
+                <div class="col-auto">
+                  <i class="fas fa-user-shield fa-2x text-gray-300"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-4">
+          <div class="card border-left-danger shadow h-100 py-2">
+            <div class="card-body">
+              <div class="row no-gutters align-items-center">
+                <div class="col mr-2">
+                  <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
+                    Unassigned Tickets</div>
+                  <div class="h5 mb-0 font-weight-bold text-gray-800" id="unassignedTickets">0</div>
+                </div>
+                <div class="col-auto">
+                  <i class="fas fa-inbox fa-2x text-gray-300"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Activity -->
+      <div class="row">
+        <div class="col-lg-6 mb-4">
+          <div class="card shadow">
+            <div class="card-header py-3">
+              <h6 class="m-0 font-weight-bold text-primary">Recent Tickets</h6>
+            </div>
+            <div class="card-body">
+              <div class="list-group list-group-flush" id="recentTickets">
+                <!-- Recent tickets will be loaded here -->
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="col-lg-6 mb-4">
+          <div class="card shadow">
+            <div class="card-header py-3">
+              <h6 class="m-0 font-weight-bold text-primary">Recent Users</h6>
+            </div>
+            <div class="card-body">
+              <div class="list-group list-group-flush" id="recentUsers">
+                <!-- Recent users will be loaded here -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Categories Section -->
+    <div id="categories-section" style="display: none;">
+      <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Manage Categories</h1>
+      </div>
+      
+      <div class="card shadow mb-4">
+        <div class="card-header py-3">
+          <h6 class="m-0 font-weight-bold text-primary">Ticket Categories</h6>
+        </div>
+        <div class="card-body">
+          <div class="row mb-4">
+            <div class="col-md-8">
+              <input type="text" class="form-control" id="new-category" placeholder="Enter new category name">
+            </div>
+            <div class="col-md-4">
+              <button class="btn btn-primary w-100" onclick="addCategory()">
+                <i class="fas fa-plus me-2"></i> Add Category
+              </button>
+            </div>
+          </div>
+          
+          <div class="table-responsive">
+            <table class="table table-bordered" id="categoriesTable">
+              <thead>
+                <tr>
+                  <th>Category Name</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="categoriesList">
+                <!-- Categories will be loaded here -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- User Management Section -->
+    <div id="users-section" style="display: none;">
+      <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">User Management</h1>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#newUserModal">
+          <i class="fas fa-plus me-2"></i> Add New User
+        </button>
+      </div>
+      
+      <div class="card shadow mb-4">
+        <div class="card-header py-3">
+          <h6 class="m-0 font-weight-bold text-primary">All Users</h6>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-bordered" id="usersTable">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Role</th>
+                  <th>Status</th>
+                  <th>Joined</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="usersList">
+                <!-- Users will be loaded here -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ticket Management Section -->
+    <div id="tickets-section" style="display: none;">
+      <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Ticket Management</h1>
+      </div>
+      
+      <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+          <h6 class="m-0 font-weight-bold text-primary">All Tickets</h6>
+          <div>
+            <select class="form-select me-2 d-inline-block w-auto" id="ticketStatusFilter">
+              <option value="">All Statuses</option>
+              <option value="Open">Open</option>
+              <option value="In Progress">In Progress</option>
+              <option value="Resolved">Resolved</option>
+              <option value="Closed">Closed</option>
+            </select>
+            <select class="form-select d-inline-block w-auto" id="ticketCategoryFilter">
+              <option value="">All Categories</option>
+              <!-- Categories will be loaded here -->
+            </select>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-bordered" id="ticketsTable">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Subject</th>
+                  <th>Category</th>
+                  <th>Status</th>
+                  <th>Priority</th>
+                  <th>Created By</th>
+                  <th>Assigned To</th>
+                  <th>Created</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="ticketsList">
+                <!-- Tickets will be loaded here -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+        <div id="reports-section" style="display: none;">
+      <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Reports</h1>
+      </div>
+      
+      <div class="card shadow mb-4">
+        <div class="card-header py-3">
+          <h6 class="m-0 font-weight-bold text-primary">Ticket Statistics</h6>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-lg-6">
+              <div class="chart-pie pt-4 pb-2">
+                <canvas id="ticketStatusChart"></canvas>
+              </div>
+            </div>
+            <div class="col-lg-6">
+              <div class="chart-pie pt-4 pb-2">
+                <canvas id="ticketCategoryChart"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="card shadow mb-4">
+        <div class="card-header py-3">
+          <h6 class="m-0 font-weight-bold text-primary">Agent Performance</h6>
+        </div>
+        <div class="card-body">
+          <div class="chart-bar">
+            <canvas id="agentPerformanceChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Admin Reports Page Content -->
+<div id="reports" style="display: none;">
+  <!-- Top Navigation -->
+  <nav class="navbar navbar-expand navbar-light mb-4"></nav>
+      <div class="d-none d-sm-inline-block form-inline mr-auto ml-md-3 my-2 my-md-0 mw-100 navbar-search">
+        <h4 class="mb-0"><i class="fas fa-chart-line text-primary me-2"></i>Reports</h4>
+      </div>
+      
+      <div class="d-flex">
+        <select class="form-select me-2" id="adminTeamFilter">
+          <option value="all">All Teams</option>
+          <option value="support">Support Team</option>
+          <option value="sales">Sales Team</option>
+          <option value="technical">Technical Team</option>
+        </select>
+        <button class="btn btn-primary" onclick="loadAdminReports()">
+          <i class="fas fa-sync-alt"></i>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Summary Metrics -->
+  <div class="row mb-4">
+    <div class="col-xl-3 col-md-6 mb-4">
+      <div class="card metric-card h-100">
+        <div class="card-body">
+          <div class="row no-gutters align-items-center">
+            <div class="col mr-2">
+              <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                Total Tickets
+              </div>
+              <div class="h2 mb-0 font-weight-bold text-gray-800">1,248</div>
+              <div class="mt-2">
+                <span class="text-success me-2">
+                  <i class="fas fa-arrow-up"></i> 18.7%
+                </span>
+                <span class="text-muted">vs last month</span>
+              </div>
+            </div>
+            <div class="col-auto">
+              <i class="fas fa-ticket-alt fa-2x text-gray-300"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-4">
+      <div class="card metric-card h-100">
+        <div class="card-body">
+          <div class="row no-gutters align-items-center">
+            <div class="col mr-2">
+              <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                Avg. First Response
+              </div>
+              <div class="h2 mb-0 font-weight-bold text-gray-800">34m 12s</div>
+              <div class="mt-2">
+                <span class="text-danger me-2">
+                  <i class="fas fa-arrow-up"></i> 5.2%
+                </span>
+                <span class="text-muted">vs last month</span>
+              </div>
+            </div>
+            <div class="col-auto">
+              <i class="fas fa-stopwatch fa-2x text-gray-300"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-4">
+      <div class="card metric-card h-100">
+        <div class="card-body">
+          <div class="row no-gutters align-items-center">
+            <div class="col mr-2">
+              <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                SLA Compliance
+              </div>
+              <div class="h2 mb-0 font-weight-bold text-gray-800">89%</div>
+              <div class="mt-2">
+                <span class="text-success me-2">
+                  <i class="fas fa-arrow-up"></i> 2.1%
+                </span>
+                <span class="text-muted">vs last month</span>
+              </div>
+            </div>
+            <div class="col-auto">
+              <i class="fas fa-clipboard-check fa-2x text-gray-300"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-4">
+      <div class="card metric-card h-100">
+        <div class="card-body">
+          <div class="row no-gutters align-items-center">
+            <div class="col mr-2">
+              <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                Customer Satisfaction
+              </div>
+              <div class="h2 mb-0 font-weight-bold text-gray-800">4.3/5</div>
+              <div class="mt-2">
+                <span class="text-success me-2">
+                  <i class="fas fa-arrow-up"></i> 0.2
+                </span>
+                <span class="text-muted">vs last month</span>
+              </div>
+            </div>
+            <div class="col-auto">
+              <i class="fas fa-smile fa-2x text-gray-300"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Team Performance -->
+  <div class="row mb-4">
+    <div class="col-lg-8">
+      <div class="card">
+        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+          <h6 class="m-0 font-weight-bold text-primary">Team Performance Overview</h6>
+          <div class="dropdown no-arrow">
+            <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-bs-toggle="dropdown">
+              <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+            </a>
+            <div class="dropdown-menu dropdown-menu-right shadow">
+              <a class="dropdown-item" href="#">Export Data</a>
+              <a class="dropdown-item" href="#">Print Report</a>
+            </div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="chart-area">
+            <canvas id="teamPerformanceChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-lg-4">
+      <div class="card h-100">
+        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+          <h6 class="m-0 font-weight-bold text-primary">Top Performers</h6>
+          <div class="dropdown no-arrow">
+            <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-bs-toggle="dropdown">
+              <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+            </a>
+            <div class="dropdown-menu dropdown-menu-right shadow">
+              <a class="dropdown-item" href="#">View All</a>
+            </div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="mb-4">
+            <div class="d-flex align-items-center mb-3">
+              <img src="https://randomuser.me/api/portraits/women/32.jpg" class="avatar me-3" alt="Agent">
+              <div>
+                <h6 class="mb-0">Sarah Johnson</h6>
+                <small class="text-muted">Support Team</small>
+              </div>
+              <div class="ms-auto">
+                <span class="badge bg-success">4.8/5</span>
+              </div>
+            </div>
+            <div class="progress progress-thin">
+              <div class="progress-bar bg-success" role="progressbar" style="width: 96%"></div>
+            </div>
+          </div>
+          
+          <div class="mb-4">
+            <div class="d-flex align-items-center mb-3">
+              <img src="https://randomuser.me/api/portraits/men/45.jpg" class="avatar me-3" alt="Agent">
+              <div>
+                <h6 class="mb-0">Michael Chen</h6>
+                <small class="text-muted">Technical Team</small>
+              </div>
+              <div class="ms-auto">
+                <span class="badge bg-success">4.7/5</span>
+              </div>
+            </div>
+            <div class="progress progress-thin">
+              <div class="progress-bar bg-success" role="progressbar" style="width: 94%"></div>
+            </div>
+          </div>
+          
+          <div class="mb-4">
+            <div class="d-flex align-items-center mb-3">
+              <img src="https://randomuser.me/api/portraits/women/68.jpg" class="avatar me-3" alt="Agent">
+              <div>
+                <h6 class="mb-0">Emily Rodriguez</h6>
+                <small class="text-muted">Sales Team</small>
+              </div>
+              <div class="ms-auto">
+                <span class="badge bg-success">4.6/5</span>
+              </div>
+            </div>
+            <div class="progress progress-thin">
+              <div class="progress-bar bg-success" role="progressbar" style="width: 92%"></div>
+            </div>
+          </div>
+          
+          <div class="mb-4">
+            <div class="d-flex align-items-center mb-3">
+              <img src="https://randomuser.me/api/portraits/men/22.jpg" class="avatar me-3" alt="Agent">
+              <div>
+                <h6 class="mb-0">David Wilson</h6>
+                <small class="text-muted">Support Team</small>
+              </div>
+              <div class="ms-auto">
+                <span class="badge bg-success">4.5/5</span>
+              </div>
+            </div>
+            <div class="progress progress-thin">
+              <div class="progress-bar bg-success" role="progressbar" style="width: 90%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Agent Comparison -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+          <h6 class="m-0 font-weight-bold text-primary">Agent Performance Comparison</h6>
+          <div class="dropdown no-arrow">
+            <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-bs-toggle="dropdown">
+              <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+            </a>
+            <div class="dropdown-menu dropdown-menu-right shadow">
+              <a class="dropdown-item" href="#">Export Data</a>
+              <a class="dropdown-item" href="#">Print Report</a>
+            </div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th>Agent</th>
+                  <th>Team</th>
+                  <th>Tickets</th>
+                  <th>Avg. Response</th>
+                  <th>Resolution %</th>
+                  <th>CSAT</th>
+                  <th>SLA %</th>
+                  <th>Trend</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>
+                    <div class="d-flex align-items-center">
+                      <img src="https://randomuser.me/api/portraits/women/32.jpg" class="avatar me-3" alt="Agent">
+                      <div>Sarah Johnson</div>
+                    </div>
+                  </td>
+                  <td>Support</td>
+                  <td>142</td>
+                  <td>12m 34s</td>
+                  <td>92%</td>
+                  <td>4.8/5</td>
+                  <td>97%</td>
+                  <td><i class="fas fa-arrow-up text-success"></i></td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="d-flex align-items-center">
+                      <img src="https://randomuser.me/api/portraits/men/45.jpg" class="avatar me-3" alt="Agent">
+                      <div>Michael Chen</div>
+                    </div>
+                  </td>
+                  <td>Technical</td>
+                  <td>118</td>
+                  <td>18m 12s</td>
+                  <td>89%</td>
+                  <td>4.7/5</td>
+                  <td>94%</td>
+                  <td><i class="fas fa-arrow-up text-success"></i></td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="d-flex align-items-center">
+                      <img src="https://randomuser.me/api/portraits/women/68.jpg" class="avatar me-3" alt="Agent">
+                      <div>Emily Rodriguez</div>
+                    </div>
+                  </td>
+                  <td>Sales</td>
+                  <td>156</td>
+                  <td>22m 45s</td>
+                  <td>85%</td>
+                  <td>4.6/5</td>
+                  <td>91%</td>
+                  <td><i class="fas fa-arrow-up text-success"></i></td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="d-flex align-items-center">
+                      <img src="https://randomuser.me/api/portraits/men/22.jpg" class="avatar me-3" alt="Agent">
+                      <div>David Wilson</div>
+                    </div>
+                  </td>
+                  <td>Support</td>
+                  <td>134</td>
+                  <td>15m 28s</td>
+                  <td>88%</td>
+                  <td>4.5/5</td>
+                  <td>93%</td>
+                  <td><i class="fas fa-arrow-down text-danger"></i></td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="d-flex align-items-center">
+                      <img src="https://randomuser.me/api/portraits/women/54.jpg" class="avatar me-3" alt="Agent">
+                      <div>Jessica Lee</div>
+                    </div>
+                  </td>
+                  <td>Technical</td>
+                  <td>98</td>
+                  <td>28m 12s</td>
+                  <td>82%</td>
+                  <td>4.3/5</td>
+                  <td>88%</td>
+                  <td><i class="fas fa-arrow-up text-success"></i></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Ticket Analytics -->
+  <div class="row">
+    <div class="col-lg-6">
+      <div class="card h-100">
+        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+          <h6 class="m-0 font-weight-bold text-primary">Ticket Volume by Type</h6>
+          <div class="dropdown no-arrow">
+            <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-bs-toggle="dropdown">
+              <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+            </a>
+            <div class="dropdown-menu dropdown-menu-right shadow">
+              <a class="dropdown-item" href="#">View Details</a>
+            </div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="chart-area">
+            <canvas id="ticketTypeChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-lg-6">
+      <div class="card h-100">
+        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+          <h6 class="m-0 font-weight-bold text-primary">Ticket Resolution Time</h6>
+          <div class="dropdown no-arrow">
+            <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-bs-toggle="dropdown">
+              <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+            </a>
+            <div class="dropdown-menu dropdown-menu-right shadow">
+              <a class="dropdown-item" href="#">View Details</a>
+            </div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="chart-area">
+            <canvas id="resolutionTimeChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Action Items -->
+  <div class="row mt-4">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header py-3 bg-primary text-white">
+          <h6 class="m-0 font-weight-bold">Team Action Items</h6>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-4 mb-4">
+              <div class="card h-100 border-left-danger">
+                <div class="card-body">
+                  <h5 class="card-title text-danger">
+                    <i class="fas fa-exclamation-circle me-2"></i> Attention Needed
+                  </h5>
+                  <p class="card-text">3 agents with CSAT scores below 4.0</p>
+                  <a href="#" class="btn btn-sm btn-outline-danger">View Details</a>
+                </div>
+              </div>
+            </div>
+            
+            <div class="col-md-4 mb-4">
+              <div class="card h-100 border-left-warning">
+                <div class="card-body">
+                  <h5 class="card-title text-warning">
+                    <i class="fas fa-clock me-2"></i> SLA At Risk
+                  </h5>
+                  <p class="card-text">12 tickets approaching response deadline</p>
+                  <a href="#" class="btn btn-sm btn-outline-warning">View Tickets</a>
+                </div>
+              </div>
+            </div>
+            
+            <div class="col-md-4 mb-4">
+              <div class="card h-100 border-left-success">
+                <div class="card-body">
+                  <h5 class="card-title text-success">
+                    <i class="fas fa-lightbulb me-2"></i> Improvement Opportunity
+                  </h5>
+                  <p class="card-text">Billing questions have 22% higher resolution time</p>
+                  <a href="#" class="btn btn-sm btn-outline-success">View Analysis</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Footer -->
+  <footer class="mt-5 text-center text-muted small">
+    <p>Report generated on <span id="adminReportDate"></span> | Data refreshes hourly</p>
+    <p class="mb-0">Confidential - For management use only</p>
+  </footer>
+</div>
+    <!-- Settings Section -->
+    <div id="settings-section" style="display: none;">
+      <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">System Settings</h1>
+      </div>
+      
+      <div class="card shadow mb-4">
+        <div class="card-header py-3">
+          <h6 class="m-0 font-weight-bold text-primary">General Settings</h6>
+        </div>
+        <div class="card-body">
+          <form id="systemSettings">
+            <div class="mb-3">
+              <label class="form-label">System Name</label>
+              <input type="text" class="form-control" value="QuickDesk">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Default Ticket Priority</label>
+              <select class="form-select">
+                <option>Low</option>
+                <option selected>Medium</option>
+                <option>High</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-check-label">
+                <input type="checkbox" class="form-check-input" checked>
+                Email Notifications
+              </label>
+            </div>
+            <button type="submit" class="btn btn-primary">Save Settings</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- New User Modal -->
+  <div class="modal fade" id="newUserModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Add New User</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="newUserForm">
+            <div class="mb-3">
+              <label class="form-label">Full Name</label>
+              <input type="text" class="form-control" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Email</label>
+              <input type="email" class="form-control" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Role</label>
+              <select class="form-select" required>
+                <option value="">Select Role</option>
+                <option value="admin">Administrator</option>
+                <option value="agent">Support Agent</option>
+                <option value="user">End User</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Password</label>
+              <input type="password" class="form-control" required>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-primary" onclick="createUser()">Create User</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit User Modal -->
+  <div class="modal fade" id="editUserModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Edit User</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body" id="editUserModalBody">
+          <!-- User edit form will be loaded here -->
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-primary" onclick="saveUserChanges()">Save Changes</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Ticket Detail Modal -->
+  <div class="modal fade" id="ticketDetailModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="ticketDetailModalTitle">Ticket Details</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body" id="ticketDetailModalBody">
+          <!-- Ticket details will be loaded here -->
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary" onclick="saveTicketChanges()">Save Changes</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    // Global variables
+    let currentUser = {};
+    let allUsers = [];
+    let allTickets = [];
+    let allCategories = [];
+    let currentEditingUserId = null;
+    let currentEditingTicketId = null;
+    
+    // Initialize dashboard
+    document.addEventListener('DOMContentLoaded', function() {
+      // Check authentication
+      currentUser = JSON.parse(localStorage.getItem('currentUser')) || {};
+      if (!currentUser || currentUser.role !== 'admin') {
+        alert('You must be logged in as admin to access this page');
+        window.location.href = 'login.html';
+      }
+      
+      // Load initial data
+      loadDashboardData();
+      
+      // Set up event listeners
+      document.getElementById('globalSearch').addEventListener('input', handleGlobalSearch);
+    });
+    
+    // Toggle sidebar on mobile
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('active');
+      document.getElementById('mainContent').classList.toggle('active');
+    }
+    
+    // Show specific section
+    function showSection(sectionId) {
+      // Hide all sections
+      document.querySelectorAll('[id$="-section"]').forEach(section => {
+        section.style.display = 'none';
+      });
+      
+      // Show selected section
+      document.getElementById(`${sectionId}-section`).style.display = 'block';
+      
+      // Load section data if needed
+      switch(sectionId) {
+        case 'categories':
+          loadCategories();
+          break;
+        case 'users':
+          loadUsers();
+          break;
+        case 'tickets':
+          loadAllTickets();
+          break;
+        case 'reports':
+          loadReports();
+          break;
+      }
+    }
+    
+    // Load all dashboard data
+    function loadDashboardData() {
+      // Load users
+      allUsers = JSON.parse(localStorage.getItem('users')) || [
+        { id: 1, name: 'Admin', email: 'admin@quickdesk.com', role: 'admin', status: 'active', createdAt: new Date().toISOString() },
+        { id: 2, name: 'Agent', email: 'agent@quickdesk.com', role: 'agent', status: 'active', createdAt: new Date().toISOString() },
+        { id: 3, name: 'User', email: 'user@quickdesk.com', role: 'user', status: 'active', createdAt: new Date().toISOString() }
+      ];
+      localStorage.setItem('users', JSON.stringify(allUsers));
+      
+      // Load tickets
+      allTickets = JSON.parse(localStorage.getItem('tickets')) || [];
+      
+      // Load categories
+      allCategories = JSON.parse(localStorage.getItem('categories')) || ['Login', 'Email', 'Billing', 'Technical'];
+      localStorage.setItem('categories', JSON.stringify(allCategories));
+      
+      // Update dashboard stats
+      updateDashboardStats();
+      
+      // Load recent tickets
+      loadRecentTickets();
+      
+      // Load recent users
+      loadRecentUsers();
+    }
+    
+    // Update dashboard statistics
+    function updateDashboardStats() {
+      document.getElementById('totalUsers').textContent = allUsers.length;
+      document.getElementById('totalAgents').textContent = allUsers.filter(u => u.role === 'agent').length;
+      document.getElementById('activeTickets').textContent = allTickets.filter(t => t.status !== 'Resolved' && t.status !== 'Closed').length;
+      document.getElementById('unassignedTickets').textContent = allTickets.filter(t => !t.assignedTo && t.status === 'Open').length;
+      document.getElementById('openTicketsBadge').textContent = allTickets.filter(t => t.status === 'Open').length;
+    }
+    
+    // Load recent tickets
+    function loadRecentTickets() {
+      const container = document.getElementById('recentTickets');
+      container.innerHTML = '';
+      
+      const recentTickets = [...allTickets]
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+        .slice(0, 5);
+      
+      if (recentTickets.length === 0) {
+        container.innerHTML = '<div class="text-center py-3 text-muted">No recent tickets</div>';
+        return;
+      }
+      
+      recentTickets.forEach(ticket => {
+        const item = document.createElement('a');
+        item.className = 'list-group-item list-group-item-action';
+        item.innerHTML = `
+          <div class="d-flex w-100 justify-content-between">
+            <h6 class="mb-1">${ticket.subject}</h6>
+            <small>${new Date(ticket.createdAt).toLocaleDateString()}</small>
+          </div>
+          <p class="mb-1 small text-muted">${ticket.description.substring(0, 60)}${ticket.description.length > 60 ? '...' : ''}</p>
+          <small><span class="badge bg-primary">${ticket.status}</span> <span class="badge bg-secondary">${ticket.category}</span></small>
+        `;
+        item.addEventListener('click', () => viewTicketDetails(ticket.id));
+        container.appendChild(item);
+      });
+    }
+    
+    // Load recent users
+    function loadRecentUsers() {
+      const container = document.getElementById('recentUsers');
+      container.innerHTML = '';
+      
+      const recentUsers = [...allUsers]
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+        .slice(0, 5);
+      
+      if (recentUsers.length === 0) {
+        container.innerHTML = '<div class="text-center py-3 text-muted">No recent users</div>';
+        return;
+      }
+      
+      recentUsers.forEach(user => {
+        const item = document.createElement('a');
+        item.className = 'list-group-item list-group-item-action';
+        item.innerHTML = `
+          <div class="d-flex align-items-center">
+            <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=${user.role === 'admin' ? '4e73df' : user.role === 'agent' ? 'f6c23e' : '6c757d'}&color=fff" 
+                 class="avatar me-3" alt="${user.name}">
+            <div>
+              <h6 class="mb-0">${user.name}</h6>
+              <small class="text-muted">${user.email}</small>
+            </div>
+            <span class="ms-auto badge ${user.role === 'admin' ? 'bg-primary' : user.role === 'agent' ? 'bg-warning' : 'bg-secondary'}">
+              ${user.role}
+            </span>
+          </div>
+        `;
+        item.addEventListener('click', () => editUser(user.id));
+        container.appendChild(item);
+      });
+    }
+    
+    // Load all categories
+    function loadCategories() {
+      const container = document.getElementById('categoriesList');
+      container.innerHTML = '';
+      
+      if (allCategories.length === 0) {
+        container.innerHTML = '<tr><td colspan="2" class="text-center py-3">No categories found</td></tr>';
+        return;
+      }
+      
+      allCategories.forEach((category, index) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${category}</td>
+          <td>
+            <button class="btn btn-sm btn-danger" onclick="removeCategory(${index})">
+              <i class="fas fa-trash"></i> Delete
+            </button>
+          </td>
+        `;
+        container.appendChild(row);
+      });
+    }
+    
+    // Add new category
+    function addCategory() {
+      const input = document.getElementById('new-category');
+      const newCategory = input.value.trim();
+      
+      if (!newCategory) {
+        alert('Please enter a category name');
+        return;
+      }
+      
+      if (allCategories.includes(newCategory)) {
+        alert('This category already exists');
+        return;
+      }
+      
+      allCategories.push(newCategory);
+      localStorage.setItem('categories', JSON.stringify(allCategories));
+      input.value = '';
+      loadCategories();
+      
+      // Update category dropdown in ticket management
+      updateCategoryFilters();
+    }
+    
+    // Remove category
+    function removeCategory(index) {
+      if (!confirm('Are you sure you want to delete this category?')) return;
+      
+      allCategories.splice(index, 1);
+      localStorage.setItem('categories', JSON.stringify(allCategories));
+      loadCategories();
+      
+      // Update category dropdown in ticket management
+      updateCategoryFilters();
+    }
+    
+    // Load all users
+    function loadUsers() {
+      const container = document.getElementById('usersList');
+      container.innerHTML = '';
+      
+      if (allUsers.length === 0) {
+        container.innerHTML = '<tr><td colspan="6" class="text-center py-3">No users found</td></tr>';
+        return;
+      }
+      
+      allUsers.forEach(user => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${user.name}</td>
+          <td>${user.email}</td>
+          <td class="${user.role === 'admin' ? 'role-admin' : user.role === 'agent' ? 'role-agent' : 'role-user'}">
+            ${user.role}
+          </td>
+          <td>
+            <span class="status-badge ${user.status === 'active' ? 'status-active' : 'status-inactive'}">
+              ${user.status}
+            </span>
+          </td>
+          <td>${new Date(user.createdAt).toLocaleDateString()}</td>
+          <td>
+            <button class="btn btn-sm btn-primary me-1" onclick="editUser(${user.id})">
+              <i class="fas fa-edit"></i>
+            </button>
+            <button class="btn btn-sm btn-danger" onclick="deleteUser(${user.id})">
+              <i class="fas fa-trash"></i>
+            </button>
+          </td>
+        `;
+        container.appendChild(row);
+      });
+    }
+    
+    // Create new user
+    function createUser() {
+      const form = document.getElementById('newUserForm');
+      const formData = new FormData(form);
+      
+      const newUser = {
+        id: allUsers.length > 0 ? Math.max(...allUsers.map(u => u.id)) + 1 : 1,
+        name: formData.get('name'),
+        email: formData.get('email'),
+        role: formData.get('role'),
+        status: 'active',
+        createdAt: new Date().toISOString()
+      };
+      
+      allUsers.push(newUser);
+      localStorage.setItem('users', JSON.stringify(allUsers));
+      
+      // Close modal and refresh
+      bootstrap.Modal.getInstance(document.getElementById('newUserModal')).hide();
+      form.reset();
+      loadUsers();
+      updateDashboardStats();
+    }
+    
+    // Edit user
+    function editUser(userId) {
+      const user = allUsers.find(u => u.id === userId);
+      if (!user) return;
+      
+      currentEditingUserId = userId;
+      
+      document.getElementById('editUserModalBody').innerHTML = `
+        <form id="editUserForm">
+          <div class="mb-3">
+            <label class="form-label">Full Name</label>
+            <input type="text" class="form-control" name="name" value="${user.name}" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Email</label>
+            <input type="email" class="form-control" name="email" value="${user.email}" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Role</label>
+            <select class="form-select" name="role" required>
+              <option value="admin" ${user.role === 'admin' ? 'selected' : ''}>Administrator</option>
+              <option value="agent" ${user.role === 'agent' ? 'selected' : ''}>Support Agent</option>
+              <option value="user" ${user.role === 'user' ? 'selected' : ''}>End User</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Status</label>
+            <select class="form-select" name="status" required>
+              <option value="active" ${user.status === 'active' ? 'selected' : ''}>Active</option>
+              <option value="inactive" ${user.status === 'inactive' ? 'selected' : ''}>Inactive</option>
+            </select>
+          </div>
+        </form>
+      `;
+      
+      const editUserModal = new bootstrap.Modal(document.getElementById('editUserModal'));
+      editUserModal.show();
+    }
+    
+    // Save user changes
+    function saveUserChanges() {
+      const form = document.getElementById('editUserForm');
+      const formData = new FormData(form);
+      
+      const userIndex = allUsers.findIndex(u => u.id === currentEditingUserId);
+      if (userIndex === -1) return;
+      
+      allUsers[userIndex] = {
+        ...allUsers[userIndex],
+        name: formData.get('name'),
+        email: formData.get('email'),
+        role: formData.get('role'),
+        status: formData.get('status')
+      };
+      
+      localStorage.setItem('users', JSON.stringify(allUsers));
+      
+      // Close modal and refresh
+      bootstrap.Modal.getInstance(document.getElementById('editUserModal')).hide();
+      loadUsers();
+      updateDashboardStats();
+    }
+    
+    // Delete user
+    function deleteUser(userId) {
+      if (!confirm('Are you sure you want to delete this user?')) return;
+      
+      allUsers = allUsers.filter(u => u.id !== userId);
+      localStorage.setItem('users', JSON.stringify(allUsers));
+      loadUsers();
+      updateDashboardStats();
+    }
+    
+    // Load all tickets
+    function loadAllTickets() {
+      const container = document.getElementById('ticketsList');
+      container.innerHTML = '';
+      
+      if (allTickets.length === 0) {
+        container.innerHTML = '<tr><td colspan="9" class="text-center py-3">No tickets found</td></tr>';
+        return;
+      }
+      
+      allTickets.forEach(ticket => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${ticket.id}</td>
+          <td>${ticket.subject}</td>
+          <td>${ticket.category}</td>
+          <td>
+            <span class="badge ${ticket.status === 'Open' ? 'bg-primary' : ticket.status === 'In Progress' ? 'bg-warning' : ticket.status === 'Resolved' ? 'bg-success' : 'bg-secondary'}">
+              ${ticket.status}
+            </span>
+          </td>
+          <td class="${ticket.priority === 'High' ? 'text-danger' : ticket.priority === 'Medium' ? 'text-warning' : 'text-success'}">
+            ${ticket.priority}
+          </td>
+          <td>${ticket.createdBy}</td>
+          <td>${ticket.assignedTo || 'Unassigned'}</td>
+          <td>${new Date(ticket.createdAt).toLocaleDateString()}</td>
+          <td>
+            <button class="btn btn-sm btn-primary" onclick="viewTicketDetails('${ticket.id}')">
+              <i class="fas fa-eye"></i>
+            </button>
+          </td>
+        `;
+        container.appendChild(row);
+      });
+      
+      // Update category filters
+      updateCategoryFilters();
+    }
+    
+    // Update category filters dropdown
+    function updateCategoryFilters() {
+      const filter = document.getElementById('ticketCategoryFilter');
+      filter.innerHTML = '<option value="">All Categories</option>';
+      
+      allCategories.forEach(category => {
+        const option = document.createElement('option');
+        option.value = category;
+        option.textContent = category;
+        filter.appendChild(option);
+      });
+    }
+    
+    // View ticket details
+    function viewTicketDetails(ticketId) {
+      const ticket = allTickets.find(t => t.id === ticketId);
+      if (!ticket) return;
+      
+      currentEditingTicketId = ticketId;
+      
+      document.getElementById('ticketDetailModalTitle').textContent = `Ticket #${ticket.id}: ${ticket.subject}`;
+      
+      let modalBody = `
+        <div class="row mb-4">
+          <div class="col-md-6">
+            <p><strong>Status:</strong> 
+              <select class="form-select d-inline-block w-auto" id="ticketStatus">
+                <option value="Open" ${ticket.status === 'Open' ? 'selected' : ''}>Open</option>
+                <option value="In Progress" ${ticket.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
+                <option value="Resolved" ${ticket.status === 'Resolved' ? 'selected' : ''}>Resolved</option>
+                <option value="Closed" ${ticket.status === 'Closed' ? 'selected' : ''}>Closed</option>
+              </select>
+            </p>
+            <p><strong>Priority:</strong> 
+              <select class="form-select d-inline-block w-auto" id="ticketPriority">
+                <option value="High" ${ticket.priority === 'High' ? 'selected' : ''}>High</option>
+                <option value="Medium" ${ticket.priority === 'Medium' ? 'selected' : ''}>Medium</option>
+                <option value="Low" ${ticket.priority === 'Low' ? 'selected' : ''}>Low</option>
+              </select>
+            </p>
+            <p><strong>Category:</strong> 
+              <select class="form-select d-inline-block w-auto" id="ticketCategory">
+                ${allCategories.map(cat => `<option value="${cat}" ${ticket.category === cat ? 'selected' : ''}>${cat}</option>`).join('')}
+              </select>
+            </p>
+          </div>
+          <div class="col-md-6">
+            <p><strong>Assigned To:</strong> 
+              <select class="form-select d-inline-block w-auto" id="ticketAssignee">
+                <option value="">Unassigned</option>
+                ${allUsers.filter(u => u.role === 'agent' && u.status === 'active').map(agent => `
+                  <option value="${agent.email}" ${ticket.assignedTo === agent.email ? 'selected' : ''}>${agent.name} (${agent.email})</option>
+                `).join('')}
+              </select>
+            </p>
+            <p><strong>Created By:</strong> ${ticket.createdBy}</p>
+            <p><strong>Created:</strong> ${new Date(ticket.createdAt).toLocaleString()}</p>
+            <p><strong>Updated:</strong> ${new Date(ticket.updatedAt).toLocaleString()}</p>
+          </div>
+        </div>
+        
+        <div class="card mb-4">
+          <div class="card-header">
+            <h6>Description</h6>
+          </div>
+          <div class="card-body">
+            <p>${ticket.description}</p>
+          </div>
+        </div>
+        
+        <div class="card">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <h6 class="mb-0">Conversation</h6>
+            <span class="badge bg-primary">${ticket.replies ? ticket.replies.length : 0} replies</span>
+          </div>
+          <div class="card-body">
+            <div class="d-flex flex-column" id="conversationContainer">
+              <!-- Initial ticket message -->
+              <div class="d-flex mb-3">
+                <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(ticket.createdBy || 'Customer')}&background=6c757d&color=fff" 
+                     class="avatar me-3" alt="Customer">
+                <div class="conversation-bubble user-message">
+                  <div class="d-flex justify-content-between small mb-1">
+                    <strong>${ticket.createdBy || 'Customer'}</strong>
+                    <span>${new Date(ticket.createdAt).toLocaleString()}</span>
+                  </div>
+                  <p>${ticket.description}</p>
+                </div>
+              </div>
+              
+              <!-- Replies -->
+              ${ticket.replies && ticket.replies.length > 0 ? ticket.replies.map(reply => `
+                <div class="d-flex mb-3 ${reply.by === 'agent' ? 'justify-content-end' : ''}">
+                  ${reply.by !== 'agent' ? `
+                  <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(ticket.createdBy || 'Customer')}&background=6c757d&color=fff" 
+                       class="avatar me-3" alt="Customer">
+                  ` : ''}
+                  <div class="conversation-bubble ${reply.by === 'agent' ? 'agent-message' : 'user-message'}">
+                    <div class="d-flex justify-content-between small mb-1">
+                      <strong>${reply.by === 'agent' ? reply.agentName || 'Agent' : (ticket.createdBy || 'Customer')}</strong>
+                      <span>${new Date(reply.timestamp).toLocaleString()}</span>
+                    </div>
+                    <p>${reply.message}</p>
+                    ${reply.attachment ? `<a href="#" class="text-white small"><i class="fas fa-paperclip"></i> ${reply.attachment}</a>` : ''}
+                  </div>
+                  ${reply.by === 'agent' ? `
+                  <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(reply.agentName || 'Agent')}&background=4e73df&color=fff" 
+                       class="avatar ms-3" alt="Agent">
+                  ` : ''}
+                </div>
+              `).join('') : `
+                <div class="text-center text-muted py-3">
+                  No replies yet
+                </div>
+              `}
+            </div>
+          </div>
+        </div>
+      `;
+
+      document.getElementById('ticketDetailModalBody').innerHTML = modalBody;
+      
+      const ticketModal = new bootstrap.Modal(document.getElementById('ticketDetailModal'));
+      ticketModal.show();
+    }
+    
+    // Save ticket changes
+    function saveTicketChanges() {
+      const ticketIndex = allTickets.findIndex(t => t.id === currentEditingTicketId);
+      if (ticketIndex === -1) return;
+      
+      allTickets[ticketIndex] = {
+        ...allTickets[ticketIndex],
+        status: document.getElementById('ticketStatus').value,
+        priority: document.getElementById('ticketPriority').value,
+        category: document.getElementById('ticketCategory').value,
+        assignedTo: document.getElementById('ticketAssignee').value,
+        updatedAt: new Date().toISOString()
+      };
+      
+      localStorage.setItem('tickets', JSON.stringify(allTickets));
+      
+      // Close modal and refresh
+      bootstrap.Modal.getInstance(document.getElementById('ticketDetailModal')).hide();
+      loadAllTickets();
+      updateDashboardStats();
+    }
+    
+    // Load reports
+    function loadReports() {
+      // Ticket status chart
+      const statusCtx = document.getElementById('ticketStatusChart').getContext('2d');
+      const statusCounts = {
+        Open: allTickets.filter(t => t.status === 'Open').length,
+        'In Progress': allTickets.filter(t => t.status === 'In Progress').length,
+        Resolved: allTickets.filter(t => t.status === 'Resolved').length,
+        Closed: allTickets.filter(t => t.status === 'Closed').length
+      };
+      
+      new Chart(statusCtx, {
+        type: 'doughnut',
+        data: {
+          labels: Object.keys(statusCounts),
+          datasets: [{
+            data: Object.values(statusCounts),
+            backgroundColor: ['#4e73df', '#f6c23e', '#1cc88a', '#858796'],
+            hoverBackgroundColor: ['#2e59d9', '#dda20a', '#17a673', '#6c757d'],
+            hoverBorderColor: "rgba(234, 236, 244, 1)",
+          }],
+        },
+        options: {
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'right',
+            },
+            title: {
+              display: true,
+              text: 'Ticket Status'
+            }
+          }
+        }
+      });
+      
+      // Ticket category chart
+      const categoryCtx = document.getElementById('ticketCategoryChart').getContext('2d');
+      const categoryCounts = {};
+      allCategories.forEach(cat => {
+        categoryCounts[cat] = allTickets.filter(t => t.category === cat).length;
+      });
+      
+      new Chart(categoryCtx, {
+        type: 'pie',
+        data: {
+          labels: Object.keys(categoryCounts),
+          datasets: [{
+            data: Object.values(categoryCounts),
+            backgroundColor: ['#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b'],
+            hoverBackgroundColor: ['#2e59d9', '#17a673', '#2c9faf', '#dda20a', '#be2617'],
+            hoverBorderColor: "rgba(234, 236, 244, 1)",
+          }],
+        },
+        options: {
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'right',
+            },
+            title: {
+              display: true,
+              text: 'Ticket Categories'
+            }
+          }
+        }
+      });
+      
+      // Agent performance chart
+      const agentCtx = document.getElementById('agentPerformanceChart').getContext('2d');
+      const agents = allUsers.filter(u => u.role === 'agent' && u.status === 'active');
+      const agentData = agents.map(agent => {
+        return {
+          name: agent.name,
+          tickets: allTickets.filter(t => t.assignedTo === agent.email).length,
+          resolved: allTickets.filter(t => t.assignedTo === agent.email && t.status === 'Resolved').length
+        };
+      });
+      
+      new Chart(agentCtx, {
+        type: 'bar',
+        data: {
+          labels: agentData.map(a => a.name),
+          datasets: [
+            {
+              label: "Total Tickets",
+              backgroundColor: "#4e73df",
+              hoverBackgroundColor: "#2e59d9",
+              borderColor: "#4e73df",
+              data: agentData.map(a => a.tickets),
+            },
+            {
+              label: "Resolved Tickets",
+              backgroundColor: "#1cc88a",
+              hoverBackgroundColor: "#17a673",
+              borderColor: "#1cc88a",
+              data: agentData.map(a => a.resolved),
+            }
+          ],
+        },
+        options: {
+          maintainAspectRatio: false,
+          scales: {
+            x: {
+              grid: {
+                display: false,
+              }
+            },
+            y: {
+              beginAtZero: true,
+              grid: {
+                display: false,
+              }
+            }
+          },
+          plugins: {
+            legend: {
+              position: 'top',
+            },
+            title: {
+              display: true,
+              text: 'Agent Performance'
+            }
+          }
+        }
+      });
+    }
+    
+    // Handle global search
+    function handleGlobalSearch() {
+      const searchTerm = document.getElementById('globalSearch').value.toLowerCase();
+      
+      if (!searchTerm) return;
+      
+      // Search users
+      const userResults = allUsers.filter(u => 
+        u.name.toLowerCase().includes(searchTerm) || 
+        u.email.toLowerCase().includes(searchTerm)
+      );
+      
+      // Search tickets
+      const ticketResults = allTickets.filter(t => 
+        t.subject.toLowerCase().includes(searchTerm) || 
+        t.description.toLowerCase().includes(searchTerm) ||
+        t.category.toLowerCase().includes(searchTerm)
+      );
+      
+      // Show search results (in a real app, you'd have a proper search results page)
+      console.log('User results:', userResults);
+      console.log('Ticket results:', ticketResults);
+      alert(`Found ${userResults.length} users and ${ticketResults.length} tickets matching "${searchTerm}"`);
+    }
+    
+    // Logout
+    function logout() {
+      localStorage.removeItem('currentUser');
+      window.location.href = 'login.html';
+    }
+  </script>
+</body>
+</html>
