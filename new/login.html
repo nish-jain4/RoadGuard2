@@ -272,7 +272,7 @@
       const loginForm = document.getElementById('loginForm');
       const roleSelect = document.getElementById('loginRole');
       const roleDescription = document.getElementById('roleDescription');
-      
+
       // Update role description when selection changes
       roleSelect.addEventListener('change', function() {
         switch(this.value) {
@@ -289,35 +289,35 @@
             roleDescription.textContent = "Select your role to continue";
         }
       });
-      
-      loginForm.addEventListener('submit', function(e) {
+
+      // Form submission with API call
+      loginForm.addEventListener('submit', async function(e) {
         e.preventDefault();
-        
+
         // Reset validation
         loginForm.querySelectorAll('.is-invalid').forEach(el => {
           el.classList.remove('is-invalid');
         });
-        
+
         // Validate form
         let isValid = true;
         const email = document.getElementById('loginEmail');
         const password = document.getElementById('loginPassword');
         const role = document.getElementById('loginRole');
-        
+
         if (!email.value || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value)) {
           email.classList.add('is-invalid');
           isValid = false;
         }
-        
         if (!password.value || password.value.length < 6) {
           password.classList.add('is-invalid');
           isValid = false;
         }
-
         if (!role.value) {
           role.classList.add('is-invalid');
           isValid = false;
         }
+<<<<<<< HEAD
         
         if (isValid) {
           // Simulate loading
@@ -401,3 +401,7 @@
   </script>
 </body>
 </html>
+=======
+
+        if (!isValid) return;
+>>>>>>> 958fded (un)

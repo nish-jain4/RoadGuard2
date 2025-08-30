@@ -23,6 +23,7 @@ def init_db():
                   phone TEXT,
                   created_at DATETIME DEFAULT CURRENT_TIMESTAMP)''')
     
+<<<<<<< HEAD
     # Check if we have any users, if not create sample data
     c.execute("SELECT COUNT(*) FROM users")
     if c.fetchone()[0] == 0:
@@ -32,6 +33,13 @@ def init_db():
             ('mechanic@example.com', generate_password_hash('password123'), 'mechanic', 'Mike Mechanic', '555-5678'),
             ('admin@example.com', generate_password_hash('password123'), 'admin', 'Admin User', '555-9012')
         ]
+=======
+    # Insert sample data if needed
+    try:
+        # Sample user (password: user123)
+        c.execute("INSERT INTO nistha (email, password, name, role) VALUES (?, ?, ?, ?)",
+                 ('user@example.com', hashlib.sha256('user123'.encode()).hexdigest(), 'John Doe', 'user'))
+>>>>>>> 958fded (un)
         
         c.executemany('INSERT INTO users (email, password_hash, role, full_name, phone) VALUES (?, ?, ?, ?, ?)',
                       sample_users)
@@ -58,8 +66,9 @@ def index():
 def login_page():
     return render_template('login.html')
 
-@app.route('/api/login', methods=['POST'])
+@app.route('/new/login', methods=['POST'])
 def login():
+<<<<<<< HEAD
     data = request.get_json()
     email = data.get('email')
     password = data.get('password')
@@ -80,6 +89,14 @@ def login():
     if user and check_password_hash(user['password_hash'], password):
         if user['role'] != role:
             return jsonify({'error': f'Invalid role for this account. Your account is for {user["role"]}s.'}), 400
+=======
+    """Handle user login"""
+    try:
+        data = request.get_json() 
+        email = data.get('email')
+        password = data.get('password')
+        role = data.get('role')
+>>>>>>> 958fded (un)
         
         # Store user in session
         session['user_id'] = user['id']
