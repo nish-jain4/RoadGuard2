@@ -1,4 +1,3 @@
-# app.py - Flask backend for RoadGuard login system
 from flask import Flask, render_template, request, jsonify, session, redirect, url_for
 from werkzeug.security import generate_password_hash, check_password_hash
 import sqlite3
@@ -6,14 +5,69 @@ import os
 import re
 
 app = Flask(__name__)
-app.secret_key = os.urandom(24)  # Secure random key for production
+app.secret_key = os.urandom(24)  # secure random key for production
+from flask import flash  # add at the top with other imports
 
-# Database initialization
+# ----------------------------
+# Registration
+# ----------------------------
+@app.route("/api/register", methods=["POST"])
+def api_register():
+    if request.is_json:
+        data = request.get_json()
+    else:
+        data = request.form
+
+    name = data.get("name")
+    email = data.get("email")
+    phone = data.get("phone")
+    role = data.get("role")
+    password = data.get("password")
+
+    if not name or not email or not role or not password:
+        return jsonify({"error": "All required fields must be filled"}), 400
+
+    if not is_valid_email(email):
+        return jsonify({"error": "Invalid email format"}), 400
+
+    conn = get_db_connection()
+    try:
+        cur = conn.cursor()
+        cur.execute(
+            "INSERT INTO users (email, password_hash, role, full_name, phone) VALUES (?, ?, ?, ?, ?)",
+            (email, generate_password_hash(password), role, name, phone),
+        )
+        conn.commit()
+        user_id = cur.lastrowid
+    except sqlite3.IntegrityError:
+        conn.close()
+        return jsonify({"error": "Email already registered"}), 400
+    finally:
+        conn.close()
+
+    # set session
+    session["user_id"] = user_id
+    session["email"] = email
+    session["role"] = role
+    session["full_name"] = name
+
+    return jsonify({
+        "message": "Registration successful",
+        "user": {
+            "id": user_id,
+            "email": email,
+            "role": role,
+            "full_name": name
+        }
+    }), 200
+
+
+# ----------------------------
+# Database setup
+# ----------------------------
 def init_db():
     conn = sqlite3.connect('roadguard.db')
     c = conn.cursor()
-    
-    # Create users table
     c.execute('''CREATE TABLE IF NOT EXISTS users
                  (id INTEGER PRIMARY KEY AUTOINCREMENT,
                   email TEXT UNIQUE NOT NULL,
@@ -22,71 +76,76 @@ def init_db():
                   full_name TEXT,
                   phone TEXT,
                   created_at DATETIME DEFAULT CURRENT_TIMESTAMP)''')
-    
-    # Check if we have any users, if not create sample data
+
+    # Create default users (if DB empty)
     c.execute("SELECT COUNT(*) FROM users")
     if c.fetchone()[0] == 0:
-        # Create sample users for each role
         sample_users = [
             ('user@example.com', generate_password_hash('password123'), 'user', 'John Driver', '555-1234'),
             ('mechanic@example.com', generate_password_hash('password123'), 'mechanic', 'Mike Mechanic', '555-5678'),
             ('admin@example.com', generate_password_hash('password123'), 'admin', 'Admin User', '555-9012')
         ]
-        
-        c.executemany('INSERT INTO users (email, password_hash, role, full_name, phone) VALUES (?, ?, ?, ?, ?)',
-                      sample_users)
-    
+        c.executemany('INSERT INTO users (email, password_hash, role, full_name, phone) VALUES (?, ?, ?, ?, ?)', sample_users)
+
     conn.commit()
     conn.close()
 
-# Database connection helper
+
 def get_db_connection():
     conn = sqlite3.connect('roadguard.db')
     conn.row_factory = sqlite3.Row
     return conn
 
-# Email validation function
+
 def is_valid_email(email):
     pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
     return re.match(pattern, email) is not None
 
+
+# ----------------------------
+# Routes
+# ----------------------------
 @app.route('/')
 def index():
-    return redirect(url_for('login'))
+    return redirect(url_for('login_page'))
+
 
 @app.route('/login', methods=['GET'])
 def login_page():
-    return render_template('login.html')
+    return render_template('login.html')  # must exist in templates/
+
 
 @app.route('/api/login', methods=['POST'])
 def login():
-    data = request.get_json()
+    # Check if request is JSON or form data
+    if request.is_json:
+        data = request.get_json()
+    else:
+        data = request.form
+    
     email = data.get('email')
     password = data.get('password')
     role = data.get('role')
-    
-    # Validate input
+
     if not email or not password or not role:
         return jsonify({'error': 'All fields are required'}), 400
-    
     if not is_valid_email(email):
         return jsonify({'error': 'Invalid email format'}), 400
-    
-    # Check credentials against database
+
     conn = get_db_connection()
     user = conn.execute('SELECT * FROM users WHERE email = ?', (email,)).fetchone()
     conn.close()
-    
+
     if user and check_password_hash(user['password_hash'], password):
         if user['role'] != role:
-            return jsonify({'error': f'Invalid role for this account. Your account is for {user["role"]}s.'}), 400
-        
-        # Store user in session
+            return jsonify({'error': f'Your account is registered as {user["role"]}'}), 400
+
+        # set session
         session['user_id'] = user['id']
         session['email'] = user['email']
         session['role'] = user['role']
         session['full_name'] = user['full_name']
-        
+
         return jsonify({
             'message': 'Login successful',
             'user': {
@@ -99,91 +158,53 @@ def login():
     else:
         return jsonify({'error': 'Invalid email or password'}), 401
 
-@app.route('/api/register', methods=['POST'])
-def register():
-    data = request.get_json()
-    email = data.get('email')
-    password = data.get('password')
-    role = data.get('role')
-    full_name = data.get('full_name')
-    phone = data.get('phone')
-    
-    # Validate input
-    if not email or not password or not role:
-        return jsonify({'error': 'Email, password, and role are required'}), 400
-    
-    if not is_valid_email(email):
-        return jsonify({'error': 'Invalid email format'}), 400
-    
-    if len(password) < 6:
-        return jsonify({'error': 'Password must be at least 6 characters'}), 400
-    
-    # Check if user already exists
-    conn = get_db_connection()
-    existing_user = conn.execute('SELECT * FROM users WHERE email = ?', (email,)).fetchone()
-    
-    if existing_user:
-        conn.close()
-        return jsonify({'error': 'User with this email already exists'}), 409
-    
-    # Create new user
-    hashed_password = generate_password_hash(password)
-    conn.execute('INSERT INTO users (email, password_hash, role, full_name, phone) VALUES (?, ?, ?, ?, ?)',
-                 (email, hashed_password, role, full_name, phone))
-    conn.commit()
-    
-    # Get the newly created user
-    new_user = conn.execute('SELECT * FROM users WHERE email = ?', (email,)).fetchone()
-    conn.close()
-    
-    return jsonify({
-        'message': 'Registration successful',
-        'user': {
-            'id': new_user['id'],
-            'email': new_user['email'],
-            'role': new_user['role'],
-            'full_name': new_user['full_name']
-        }
-    }), 201
 
 @app.route('/dashboard')
 def dashboard():
     if 'user_id' not in session:
         return redirect(url_for('login_page'))
-    
-    # Redirect based on role
+
+    # role-based dashboards
     if session['role'] == 'user':
-        return redirect(url_for('user_dashboard'))
+        return f"👤 User Dashboard — Welcome {session['email']}"
     elif session['role'] == 'mechanic':
-        return redirect(url_for('mechanic_dashboard'))
+        return f"🔧 Mechanic Dashboard — Welcome {session['email']}"
     elif session['role'] == 'admin':
-        return redirect(url_for('admin_dashboard'))
-    
-    return redirect(url_for('login_page'))
+        return f"🛠️ Admin Dashboard — Welcome {session['email']}"
+    else:
+        return redirect(url_for('logout'))
+
 
 @app.route('/user-dashboard')
 def user_dashboard():
     if 'user_id' not in session or session['role'] != 'user':
         return redirect(url_for('login_page'))
-    return f"Welcome to User Dashboard, {session['full_name']}!"
+    return f"Welcome to User Dashboard, {session.get('full_name', session['email'])}!"
+
 
 @app.route('/agent-dashboard')
 def mechanic_dashboard():
     if 'user_id' not in session or session['role'] != 'mechanic':
         return redirect(url_for('login_page'))
-    return f"Welcome to Mechanic Dashboard, {session['full_name']}!"
+    return f"Welcome to Mechanic Dashboard, {session.get('full_name', session['email'])}!"
+
 
 @app.route('/admin_dashboard')
 def admin_dashboard():
     if 'user_id' not in session or session['role'] != 'admin':
         return redirect(url_for('login_page'))
-    return f"Welcome to Admin Dashboard, {session['full_name']}!"
+    return f"Welcome to Admin Dashboard, {session.get('full_name', session['email'])}!"
+
 
 @app.route('/logout')
 def logout():
     session.clear()
     return redirect(url_for('login_page'))
 
+
+# ----------------------------
+# Main
+# ----------------------------
 if __name__ == '__main__':
     init_db()
     app.run(debug=True, port=3000)

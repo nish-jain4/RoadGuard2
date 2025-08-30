@@ -414,11 +414,11 @@
           </button>
           
           <div class="text-center mt-3">
-            <a href="#" class="text-decoration-none">Forgot password?</a>
+            <a href="forgotpass.html" class="text-decoration-none">Forgot password?</a>
           </div>
           
           <div class="signup-link">
-            <p>Don't have an account? <a href="#" class="text-decoration-none">Sign up here</a></p>
+            <p>Don't have an account? <a href="register.html" class="text-decoration-none">Sign up here</a></p>
           </div>
         </form>
       </div>
@@ -464,7 +464,7 @@
                 <label for="issueType" class="form-label">Issue Type</label>
                 <select class="form-select" id="issueType" required>
                   <option value="" selected disabled>Select issue type</option>
-                  <option value="flat_tire">Flat Tire</option>
+                  <option value="flat_Tyre">Flat Tyre</option>
                   <option value="battery_jump">Battery Jumpstart</option>
                   <option value="out_of_gas">Out of Fuel</option>
                   <option value="engine_trouble">Engine Trouble</option>
@@ -631,13 +631,13 @@
     ];
     
     const sampleMechanics = [
-      { id: 101, name: "Mike Johnson", speciality: "Tires, Engine", available: true, rating: 4.8 },
+      { id: 101, name: "Mike Johnson", speciality: "Tyres, Engine", available: true, rating: 4.8 },
       { id: 102, name: "Sarah Williams", speciality: "Electrical, Battery", available: true, rating: 4.9 },
       { id: 103, name: "David Brown", speciality: "Locksmith, Fuel", available: false, rating: 4.7 }
     ];
     
     const sampleServiceRequests = [
-      { id: 1001, userId: 1, userName: "John Doe", issue: "Flat Tire", location: "123 Main St", status: "pending", date: "2023-06-15 10:30" },
+      { id: 1001, userId: 1, userName: "John Doe", issue: "Flat Tyre", location: "123 Main St", status: "pending", date: "2023-06-15 10:30" },
       { id: 1002, userId: 2, userName: "Jane Smith", issue: "Battery Jumpstart", location: "456 Oak Ave", status: "assigned", mechanicId: 101, date: "2023-06-15 09:15" },
       { id: 1003, userId: 1, userName: "John Doe", issue: "Out of Gas", location: "789 Pine Rd", status: "in progress", mechanicId: 102, date: "2023-06-14 16:45" },
       { id: 1004, userId: 2, userName: "Jane Smith", issue: "Engine Trouble", location: "321 Elm St", status: "completed", mechanicId: 103, date: "2023-06-13 14:20" }
