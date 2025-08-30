@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, render_template, redirect, url_for
 from config import Config
 from database import init_db, db_session
 from routes import auth, user, admin, worker
@@ -11,6 +11,11 @@ app.register_blueprint(auth.bp)
 app.register_blueprint(user.bp)
 app.register_blueprint(admin.bp)
 app.register_blueprint(worker.bp)
+
+
+@app.route('/')
+def index():
+    return redirect(url_for('auth.login_page'))
 
 @app.teardown_appcontext
 def shutdown_session(exception=None):
