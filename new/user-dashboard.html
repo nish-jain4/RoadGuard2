@@ -424,8 +424,8 @@
                         <div class="card-body">
                             <div class="row">
                                 <div class="col-6 mb-3">
-                                    <div class="card service-type-card text-center" onclick="selectService('flatTire')">
-                                        <div class="card-body">
+<div class="card service-type-card text-center" onclick="selectService('flatTire'); selectvehicle('Motorcycle');">
+                                            <div class="card-body">
                                             <i class="fas fa-car-burst fa-2x text-danger mb-2"></i>
                                             <h6 class="card-title">Flat Tyre</h6>
                                         </div>
@@ -924,6 +924,20 @@
             // Show the assistance modal
             const modal = new bootstrap.Modal(document.getElementById('roadsideAssistanceModal'));
             modal.show();
+        }
+        function selectvehicle(vehicleType) {
+        document.querySelectorAll('.service-type-card').forEach(card => {
+            card.classList.remove('selected');
+        });
+
+        event.currentTarget.classList.add('selected');
+
+        // Set the service type in the modal
+        document.getElementById('vehicleType').value = vehicleType;
+
+            // Show the assistance modal
+        const modal = new bootstrap.Modal(document.getElementById('roadsideAssistanceModal'));
+        modal.show();
         }
 
         function requestAssistance() {

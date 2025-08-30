@@ -1,0 +1,208 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<!-- Page Heading -->
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">Dashboard</h1>
+    <a href="/workshops" class="btn btn-primary">
+        <i class="fas fa-store me-2"></i> Find Workshops
+    </a>
+</div>
+
+<!-- Stats Cards -->
+<div class="row">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-primary shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                            Active Requests
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ active_requests_count }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-tools fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-success shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                            Completed Requests
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ completed_requests_count }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-warning shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                            Nearby Workshops
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ nearby_workshops_count }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-store fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-info shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                            Saved Workshops
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ saved_workshops_count }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-heart fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Active Requests -->
+<div class="row">
+    <div class="col-lg-8 mb-4">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                <h6 class="m-0 font-weight-bold text-primary">Active Requests</h6>
+                <a href="/requests">View All</a>
+            </div>
+            <div class="card-body">
+                <div class="list-group">
+                    {% for request in active_requests %}
+                    <a href="/requests/{{ request.id }}" class="list-group-item list-group-item-action">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h5 class="mb-1">{{ request.service_type }}</h5>
+                            <small>{{ request.created_at|date('M d, Y') }}</small>
+                        </div>
+                        <p class="mb-1">{{ request.workshop_name }}</p>
+                        <small>Status: <span class="badge bg-primary">{{ request.status }}</span></small>
+                    </a>
+                    {% else %}
+                    <p class="text-center text-muted py-3">No active requests</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4 mb-4">
+        <div class="card shadow">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Quick Services</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-6 mb-3">
+                        <div class="card service-type-card text-center" onclick="location.href='/workshops?service=flat_tire'">
+                            <div class="card-body">
+                                <i class="fas fa-car-burst fa-2x text-danger mb-2"></i>
+                                <h6 class="card-title">Flat Tire</h6>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 mb-3">
+                        <div class="card service-type-card text-center" onclick="location.href='/workshops?service=battery'">
+                            <div class="card-body">
+                                <i class="fas fa-battery-quarter fa-2x text-warning mb-2"></i>
+                                <h6 class="card-title">Jump Start</h6>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 mb-3">
+                        <div class="card service-type-card text-center" onclick="location.href='/workshops?service=fuel'">
+                            <div class="card-body">
+                                <i class="fas fa-gas-pump fa-2x text-primary mb-2"></i>
+                                <h6 class="card-title">Out of Fuel</h6>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 mb-3">
+                        <div class="card service-type-card text-center" onclick="location.href='/workshops?service=lockout'">
+                            <div class="card-body">
+                                <i class="fas fa-key fa-2x text-info mb-2"></i>
+                                <h6 class="card-title">Locked Out</h6>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="text-center mt-3">
+                    <a href="/workshops" class="btn btn-primary w-100">
+                        <i class="fas fa-tools me-2"></i> Request Service
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Nearby Workshops -->
+<div class="card shadow mb-4">
+    <div class="card-header py-3 d-flex justify-content-between align-items-center">
+        <h6 class="m-0 font-weight-bold text-primary">Nearby Workshops</h6>
+        <a href="/workshops">View All</a>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            {% for workshop in nearby_workshops %}
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card workshop-card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ workshop.name }}</h5>
+                        <div class="mb-2">
+                            <span class="rating-stars">
+                                {% for i in range(1, 5) %}
+                                {% if i <= workshop.rating %}
+                                <i class="fas fa-star"></i>
+                                {% else %}
+                                <i class="far fa-star"></i>
+                                {% endif %}
+                                {% endfor %}
+                            </span>
+                            <span class="text-muted ms-1">({{ workshop.review_count }})</span>
+                        </div>
+                        <p class="card-text">{{ workshop.address }}</p>
+                        <p class="card-text"><small class="text-muted">{{ workshop.distance }} km away</small></p>
+                    </div>
+                    <div class="card-footer bg-transparent">
+                        <a href="/workshops/{{ workshop.id }}" class="btn btn-primary btn-sm">View Details</a>
+                        <a href="/workshops/{{ workshop.id }}/request" class="btn btn-outline-primary btn-sm ms-2">Request Service</a>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="col-12 text-center py-4">
+                <p class="text-muted">No nearby workshops found</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
