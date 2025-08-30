@@ -1,0 +1,1231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RoadGuard - Service Management System</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    :root {
+      --primary-color: #2c6ecf;
+      --secondary-color: #ffffff;
+      --primary-hover: #1a5bb8;
+      --road-yellow: #ffd700;
+      --road-gray: #5a6268;
+      --user-color: #4CAF50;
+      --admin-color: #f44336;
+      --mechanic-color: #FF9800;
+    }
+    
+    body {
+      background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), 
+                  url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect fill="%23333" width="100" height="100"/><path d="M0,50 L100,50" stroke="%23ffd700" stroke-width="4" stroke-dasharray="10,10"/><circle cx="20" cy="50" r="8" fill="%23ffd700"/><circle cx="80" cy="50" r="8" fill="%23ffd700"/></svg>');
+      background-size: cover;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      height: 100vh;
+      overflow: hidden;
+    }
+    
+    .roadguard-container {
+      display: flex;
+      height: 100vh;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .login-card, .dashboard-card {
+      border: none;
+      border-radius: 15px;
+      overflow: hidden;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      max-width: 450px;
+      width: 100%;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    }
+    
+    .dashboard-card {
+      max-width: 1000px;
+      height: 90vh;
+    }
+    
+    .login-card:hover, .dashboard-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+    }
+    
+    .card-header {
+      background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%);
+      color: white;
+      text-align: center;
+      padding: 1.8rem;
+      font-weight: 600;
+      position: relative;
+    }
+    
+    .user-header {
+      background: linear-gradient(135deg, var(--user-color) 0%, #3d8b40 100%);
+    }
+    
+    .admin-header {
+      background: linear-gradient(135deg, var(--admin-color) 0%, #d32f2f 100%);
+    }
+    
+    .mechanic-header {
+      background: linear-gradient(135deg, var(--mechanic-color) 0%, #f57c00 100%);
+    }
+    
+    .card-header::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background: var(--secondary-color);
+    }
+    
+    .card-body {
+      padding: 2.5rem;
+      max-height: 60vh;
+      overflow-y: auto;
+    }
+    
+    .dashboard-body {
+      max-height: 70vh;
+    }
+    
+    .logo-container {
+      position: relative;
+      margin-bottom: 1.5rem;
+    }
+    
+    .logo-icon {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto;
+      display: block;
+      background: white;
+      border-radius: 50%;
+      padding: 15px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .logo-icon path {
+      fill: var(--primary-color);
+    }
+    
+    .form-control, .form-select {
+      padding: 0.85rem 1rem;
+      border-radius: 8px;
+      border: 2px solid #e1e5eb;
+      transition: all 0.3s;
+    }
+    
+    .form-control:focus, .form-select:focus {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 0.25rem rgba(44, 110, 207, 0.25);
+    }
+    
+    .btn-login {
+      background: linear-gradient(to right, var(--primary-color) 0%, var(--primary-hover) 100%);
+      border: none;
+      padding: 0.9rem;
+      font-weight: 600;
+      transition: all 0.3s;
+      border-radius: 8px;
+      letter-spacing: 0.5px;
+    }
+    
+    .btn-user {
+      background: linear-gradient(to right, var(--user-color) 0%, #3d8b40 100%);
+    }
+    
+    .btn-admin {
+      background: linear-gradient(to right, var(--admin-color) 0%, #d32f2f 100%);
+    }
+    
+    .btn-mechanic {
+      background: linear-gradient(to right, var(--mechanic-color) 0%, #f57c00 100%);
+    }
+    
+    .btn-login:hover {
+      background: linear-gradient(to right, var(--primary-hover) 0%, var(--primary-color) 100%);
+      transform: translateY(-2px);
+    }
+    
+    .btn-user:hover {
+      background: linear-gradient(to right, #3d8b40 0%, var(--user-color) 100%);
+    }
+    
+    .btn-admin:hover {
+      background: linear-gradient(to right, #d32f2f 0%, var(--admin-color) 100%);
+    }
+    
+    .btn-mechanic:hover {
+      background: linear-gradient(to right, #f57c00 0%, var(--mechanic-color) 100%);
+    }
+    
+    .input-icon {
+      position: relative;
+    }
+    
+    .input-icon i {
+      position: absolute;
+      top: 50%;
+      left: 15px;
+      transform: translateY(-50%);
+      color: #6c757d;
+      z-index: 5;
+    }
+    
+    .input-icon input, .input-icon select {
+      padding-left: 45px;
+    }
+    
+    .invalid-feedback {
+      display: none;
+      color: #dc3545;
+      font-size: 0.875rem;
+      margin-top: 0.35rem;
+    }
+    
+    .is-invalid {
+      border-color: #dc3545;
+    }
+    
+    .is-invalid ~ .invalid-feedback {
+      display: block;
+    }
+    
+    .road-line {
+      height: 4px;
+      background: var(--road-yellow);
+      width: 100%;
+      position: absolute;
+      bottom: 0;
+      left: 0;
+    }
+    
+    .welcome-text {
+      font-size: 1.1rem;
+      margin-bottom: 0;
+      opacity: 0.9;
+    }
+    
+    .tagline {
+      font-size: 0.9rem;
+      opacity: 0.8;
+      margin-top: 0.5rem;
+    }
+    
+    .signup-link {
+      text-align: center;
+      margin-top: 1.5rem;
+      font-size: 0.95rem;
+    }
+    
+    .car-animation {
+      position: absolute;
+      bottom: -5px;
+      left: -50px;
+      font-size: 30px;
+      color: var(--secondary-color);
+      animation: drive 15s linear infinite;
+    }
+    
+    @keyframes drive {
+      0% { transform: translateX(-100px); }
+      100% { transform: translateX(1200px); }
+    }
+    
+    .role-description {
+      font-size: 0.8rem;
+      color: #6c757d;
+      margin-top: 0.25rem;
+      margin-left: 45px;
+    }
+    
+    .dashboard-section {
+      display: none;
+    }
+    
+    .active-section {
+      display: block;
+    }
+    
+    .nav-tabs .nav-link {
+      border: none;
+      border-bottom: 3px solid transparent;
+      color: #6c757d;
+      font-weight: 500;
+      padding: 0.75rem 1rem;
+    }
+    
+    .nav-tabs .nav-link.active {
+      color: var(--primary-color);
+      border-bottom: 3px solid var(--primary-color);
+      background: transparent;
+    }
+    
+    .service-card {
+      border-left: 4px solid var(--primary-color);
+      transition: all 0.3s;
+      margin-bottom: 1rem;
+    }
+    
+    .service-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .service-user {
+      border-left-color: var(--user-color);
+    }
+    
+    .service-admin {
+      border-left-color: var(--admin-color);
+    }
+    
+    .service-mechanic {
+      border-left-color: var(--mechanic-color);
+    }
+    
+    .status-badge {
+      padding: 0.35rem 0.65rem;
+      border-radius: 50rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    
+    .status-pending {
+      background-color: #fff3cd;
+      color: #856404;
+    }
+    
+    .status-assigned {
+      background-color: #cce5ff;
+      color: #004085;
+    }
+    
+    .status-progress {
+      background-color: #d1ecf1;
+      color: #0c5460;
+    }
+    
+    .status-completed {
+      background-color: #d4edda;
+      color: #155724;
+    }
+    
+    #map {
+      height: 300px;
+      width: 100%;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+    }
+    
+    .user-icon {
+      color: var(--user-color);
+    }
+    
+    .admin-icon {
+      color: var(--admin-color);
+    }
+    
+    .mechanic-icon {
+      color: var(--mechanic-color);
+    }
+    
+    .notification-badge {
+      position: absolute;
+      top: -5px;
+      right: -5px;
+      background-color: var(--admin-color);
+      color: white;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      font-size: 0.7rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    @media (max-width: 576px) {
+      .card-body {
+        padding: 1.8rem;
+      }
+      
+      .login-card, .dashboard-card {
+        margin: 0 15px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Login Page -->
+  <div id="loginPage" class="roadguard-container">
+    <div class="card login-card shadow-lg">
+      <div class="card-header">
+        <div class="logo-container">
+          <svg class="logo-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M12 3c-4.97 0-9 4.03-9 9 0 2.5 1.04 4.76 2.71 6.36l-1.42 1.42C2.56 17.1 1.5 14.38 1.5 12c0-5.79 4.71-10.5 10.5-10.5S22.5 6.21 22.5 12c0 2.38-1.06 5.1-2.79 6.78l-1.42-1.42C20.96 16.76 22 14.5 22 12c0-5.97-4.03-9-9-9zm0 16c-3.86 0-7-3.14-7-7s3.14-7 7-7 7 3.14 7 7-3.14 7-7 7zm-1.5-12h3v6h-3V7zm6 1l3 3-3 3v-2h-4v-2h4V8zm-12 0v2h4v2H5v2l-3-3 3-3z"/>
+          </svg>
+        </div>
+        <h4>RoadGuard</h4>
+        <p class="welcome-text">Roadside Assistance Platform</p>
+        <p class="tagline">Help is just a login away</p>
+        <div class="car-animation">
+          <i class="fas fa-car-side"></i>
+        </div>
+      </div>
+      <div class="card-body">
+        <form id="loginForm" novalidate>
+          <div class="mb-4 input-icon">
+            <i class="fas fa-envelope"></i>
+            <input type="email" id="loginEmail" class="form-control" placeholder="Email address" required />
+            <div class="invalid-feedback">Please enter a valid email address</div>
+          </div>
+          
+          <div class="mb-4 input-icon">
+            <i class="fas fa-lock"></i>
+            <input type="password" id="loginPassword" class="form-control" placeholder="Password" required />
+            <div class="invalid-feedback">Please enter your password</div>
+          </div>  
+            
+          <div class="mb-4 input-icon">
+            <i class="fas fa-user-tag"></i>
+            <select id="loginRole" class="form-select" required>
+              <option value="" disabled selected>Select your role</option>
+              <option value="user">Driver/User</option>
+              <option value="mechanic">Mechanic</option>
+              <option value="admin">Administrator</option>
+            </select>
+            <div class="invalid-feedback">Please select your role</div>
+            <div class="role-description" id="roleDescription">
+              Select your role to continue
+            </div>
+          </div>
+          
+          <button type="submit" class="btn btn-primary btn-login w-100 mb-3">
+            <i class="fas fa-sign-in-alt me-2"></i> Login
+          </button>
+          
+          <div class="text-center mt-3">
+            <a href="#" class="text-decoration-none">Forgot password?</a>
+          </div>
+          
+          <div class="signup-link">
+            <p>Don't have an account? <a href="#" class="text-decoration-none">Sign up here</a></p>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- User Dashboard -->
+  <div id="userDashboard" class="roadguard-container" style="display: none;">
+    <div class="card dashboard-card shadow-lg">
+      <div class="card-header user-header">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <h4><i class="fas fa-user me-2"></i> User Dashboard</h4>
+            <p class="welcome-text mb-0">Welcome, <span id="userName">User</span></p>
+          </div>
+          <div>
+            <button class="btn btn-sm btn-outline-light me-2" onclick="showPage('loginPage')"><i class="fas fa-sign-out-alt me-1"></i> Logout</button>
+          </div>
+        </div>
+        <div class="car-animation">
+          <i class="fas fa-car-side"></i>
+        </div>
+      </div>
+      <div class="card-body dashboard-body">
+        <ul class="nav nav-tabs mb-4" id="userTabs" role="tablist">
+          <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="request-tab" data-bs-toggle="tab" data-bs-target="#request" type="button" role="tab">Request Service</button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="status-tab" data-bs-toggle="tab" data-bs-target="#status" type="button" role="tab">Request Status</button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="history-tab" data-bs-toggle="tab" data-bs-target="#history" type="button" role="tab">Service History</button>
+          </li>
+        </ul>
+        
+        <div class="tab-content" id="userTabContent">
+          <div class="tab-pane fade show active" id="request" role="tabpanel">
+            <h5 class="mb-4"><i class="fas fa-map-marker-alt me-2 user-icon"></i> Request Roadside Assistance</h5>
+            <div id="map"></div>
+            <form id="serviceRequestForm">
+              <div class="mb-3">
+                <label for="issueType" class="form-label">Issue Type</label>
+                <select class="form-select" id="issueType" required>
+                  <option value="" selected disabled>Select issue type</option>
+                  <option value="flat_tire">Flat Tire</option>
+                  <option value="battery_jump">Battery Jumpstart</option>
+                  <option value="out_of_gas">Out of Fuel</option>
+                  <option value="engine_trouble">Engine Trouble</option>
+                  <option value="lockout">Locked Out</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+              <div class="mb-3">
+                <label for="issueDescription" class="form-label">Description</label>
+                <textarea class="form-control" id="issueDescription" rows="3" placeholder="Please describe the issue in detail"></textarea>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Your Location</label>
+                <div class="d-flex">
+                  <input type="text" class="form-control me-2" id="locationLat" placeholder="Latitude" readonly>
+                  <input type="text" class="form-control" id="locationLng" placeholder="Longitude" readonly>
+                </div>
+              </div>
+              <button type="submit" class="btn btn-user w-100"><i class="fas fa-paper-plane me-2"></i> Submit Request</button>
+            </form>
+          </div>
+          
+          <div class="tab-pane fade" id="status" role="tabpanel">
+            <h5 class="mb-4"><i class="fas fa-sync-alt me-2 user-icon"></i> Current Service Requests</h5>
+            <div id="userRequestsList">
+              <div class="alert alert-info">You don't have any active service requests.</div>
+            </div>
+          </div>
+          
+          <div class="tab-pane fade" id="history" role="tabpanel">
+            <h5 class="mb-4"><i class="fas fa-history me-2 user-icon"></i> Service History</h5>
+            <div id="serviceHistory">
+              <div class="alert alert-info">No service history available.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Admin Dashboard -->
+  <div id="adminDashboard" class="roadguard-container" style="display: none;">
+    <div class="card dashboard-card shadow-lg">
+      <div class="card-header admin-header">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <h4><i class="fas fa-cog me-2"></i> Admin Dashboard</h4>
+            <p class="welcome-text mb-0">System Management</p>
+          </div>
+          <div>
+            <button class="btn btn-sm btn-outline-light me-2" onclick="showPage('loginPage')"><i class="fas fa-sign-out-alt me-1"></i> Logout</button>
+          </div>
+        </div>
+        <div class="car-animation">
+          <i class="fas fa-car-side"></i>
+        </div>
+      </div>
+      <div class="card-body dashboard-body">
+        <ul class="nav nav-tabs mb-4" id="adminTabs" role="tablist">
+          <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="requests-tab" data-bs-toggle="tab" data-bs-target="#requests" type="button" role="tab">Service Requests</button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="mechanics-tab" data-bs-toggle="tab" data-bs-target="#mechanics" type="button" role="tab">Mechanics</button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="users-tab" data-bs-toggle="tab" data-bs-target="#users" type="button" role="tab">Users</button>
+          </li>
+        </ul>
+        
+        <div class="tab-content" id="adminTabContent">
+          <div class="tab-pane fade show active" id="requests" role="tabpanel">
+            <h5 class="mb-4"><i class="fas fa-list me-2 admin-icon"></i> Pending Service Requests</h5>
+            <div id="adminRequestsList">
+              <div class="alert alert-info">No pending service requests.</div>
+            </div>
+          </div>
+          
+          <div class="tab-pane fade" id="mechanics" role="tabpanel">
+            <h5 class="mb-4"><i class="fas fa-tools me-2 admin-icon"></i> Available Mechanics</h5>
+            <div id="mechanicsList">
+              <div class="alert alert-info">No mechanics available.</div>
+            </div>
+          </div>
+          
+          <div class="tab-pane fade" id="users" role="tabpanel">
+            <h5 class="mb-4"><i class="fas fa-users me-2 admin-icon"></i> Registered Users</h5>
+            <div id="usersList">
+              <div class="alert alert-info">No users registered.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mechanic Dashboard -->
+  <div id="mechanicDashboard" class="roadguard-container" style="display: none;">
+    <div class="card dashboard-card shadow-lg">
+      <div class="card-header mechanic-header">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <h4><i class="fas fa-tools me-2"></i> Mechanic Dashboard</h4>
+            <p class="welcome-text mb-0">Welcome, <span id="mechanicName">Mechanic</span></p>
+          </div>
+          <div>
+            <div class="form-check form-switch me-2">
+              <input class="form-check-input" type="checkbox" id="availabilityToggle" checked>
+              <label class="form-check-label text-light" for="availabilityToggle">Available</label>
+            </div>
+            <button class="btn btn-sm btn-outline-light" onclick="showPage('loginPage')"><i class="fas fa-sign-out-alt me-1"></i> Logout</button>
+          </div>
+        </div>
+        <div class="car-animation">
+          <i class="fas fa-car-side"></i>
+        </div>
+      </div>
+      <div class="card-body dashboard-body">
+        <ul class="nav nav-tabs mb-4" id="mechanicTabs" role="tablist">
+          <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="assigned-tab" data-bs-toggle="tab" data-bs-target="#assigned" type="button" role="tab">Assigned Jobs</button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="available-tab" data-bs-toggle="tab" data-bs-target="#available" type="button" role="tab">Available Jobs</button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="completed-tab" data-bs-toggle="tab" data-bs-target="#completed" type="button" role="tab">Completed Jobs</button>
+          </li>
+        </ul>
+        
+        <div class="tab-content" id="mechanicTabContent">
+          <div class="tab-pane fade show active" id="assigned" role="tabpanel">
+            <h5 class="mb-4"><i class="fas fa-clipboard-list me-2 mechanic-icon"></i> Your Assigned Jobs</h5>
+            <div id="assignedJobsList">
+              <div class="alert alert-info">You don't have any assigned jobs.</div>
+            </div>
+          </div>
+          
+          <div class="tab-pane fade" id="available" role="tabpanel">
+            <h5 class="mb-4"><i class="fas fa-list-alt me-2 mechanic-icon"></i> Available Service Requests</h5>
+            <div id="availableJobsList">
+              <div class="alert alert-info">No available service requests.</div>
+            </div>
+          </div>
+          
+          <div class="tab-pane fade" id="completed" role="tabpanel">
+            <h5 class="mb-4"><i class="fas fa-check-circle me-2 mechanic-icon"></i> Completed Jobs</h5>
+            <div id="completedJobsList">
+              <div class="alert alert-info">You haven't completed any jobs yet.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    // Sample data for demonstration
+    const sampleUsers = [
+      { id: 1, name: "John Doe", email: "john@example.com", role: "user" },
+      { id: 2, name: "Jane Smith", email: "jane@example.com", role: "user" }
+    ];
+    
+    const sampleMechanics = [
+      { id: 101, name: "Mike Johnson", speciality: "Tires, Engine", available: true, rating: 4.8 },
+      { id: 102, name: "Sarah Williams", speciality: "Electrical, Battery", available: true, rating: 4.9 },
+      { id: 103, name: "David Brown", speciality: "Locksmith, Fuel", available: false, rating: 4.7 }
+    ];
+    
+    const sampleServiceRequests = [
+      { id: 1001, userId: 1, userName: "John Doe", issue: "Flat Tire", location: "123 Main St", status: "pending", date: "2023-06-15 10:30" },
+      { id: 1002, userId: 2, userName: "Jane Smith", issue: "Battery Jumpstart", location: "456 Oak Ave", status: "assigned", mechanicId: 101, date: "2023-06-15 09:15" },
+      { id: 1003, userId: 1, userName: "John Doe", issue: "Out of Gas", location: "789 Pine Rd", status: "in progress", mechanicId: 102, date: "2023-06-14 16:45" },
+      { id: 1004, userId: 2, userName: "Jane Smith", issue: "Engine Trouble", location: "321 Elm St", status: "completed", mechanicId: 103, date: "2023-06-13 14:20" }
+    ];
+    
+    // Current user and data
+    let currentUser = null;
+    let serviceRequests = [...sampleServiceRequests];
+    let users = [...sampleUsers];
+    let mechanics = [...sampleMechanics];
+    let map, userMarker;
+    
+    // Initialize the application
+    document.addEventListener('DOMContentLoaded', function() {
+      // Initialize map
+      initMap();
+      
+      // Set up login form
+      const loginForm = document.getElementById('loginForm');
+      const roleSelect = document.getElementById('loginRole');
+      const roleDescription = document.getElementById('roleDescription');
+      
+      // Update role description when selection changes
+      roleSelect.addEventListener('change', function() {
+        switch(this.value) {
+          case "user":
+            roleDescription.textContent = "Request roadside assistance services";
+            break;
+          case "mechanic":
+            roleDescription.textContent = "Provide roadside assistance services";
+            break;
+          case "admin":
+            roleDescription.textContent = "Manage platform users and services";
+            break;
+          default:
+            roleDescription.textContent = "Select your role to continue";
+        }
+      });
+      
+      // Handle login form submission
+      loginForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Reset validation
+        loginForm.querySelectorAll('.is-invalid').forEach(el => {
+          el.classList.remove('is-invalid');
+        });
+        
+        // Validate form
+        let isValid = true;
+        const email = document.getElementById('loginEmail');
+        const password = document.getElementById('loginPassword');
+        const role = document.getElementById('loginRole');
+        
+        if (!email.value || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value)) {
+          email.classList.add('is-invalid');
+          isValid = false;
+        }
+        
+        if (!password.value || password.value.length < 6) {
+          password.classList.add('is-invalid');
+          isValid = false;
+        }
+
+        if (!role.value) {
+          role.classList.add('is-invalid');
+          isValid = false;
+        }
+        
+        if (isValid) {
+          // Simulate login
+          const btn = loginForm.querySelector('button[type="submit"]');
+          const originalText = btn.innerHTML;
+          btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Authenticating...';
+          btn.disabled = true;
+          
+          // Simulate API call
+          setTimeout(() => {
+            // Set current user based on role
+            currentUser = {
+              id: role.value === 'admin' ? 0 : (role.value === 'mechanic' ? 101 : 1),
+              email: email.value,
+              role: role.value,
+              name: role.value === 'admin' ? 'Admin User' : (role.value === 'mechanic' ? 'Mike Johnson' : 'John Doe')
+            };
+            
+            // Show appropriate dashboard
+            showDashboard(role.value);
+            
+            // Reset login form
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+          }, 1500);
+        }
+      });
+      
+      // Set up service request form
+      const serviceRequestForm = document.getElementById('serviceRequestForm');
+      serviceRequestForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const issueType = document.getElementById('issueType').value;
+        const issueDescription = document.getElementById('issueDescription').value;
+        const lat = document.getElementById('locationLat').value;
+        const lng = document.getElementById('locationLng').value;
+        
+        if (!issueType) {
+          alert('Please select an issue type');
+          return;
+        }
+        
+        // Create new service request
+        const newRequest = {
+          id: Math.floor(Math.random() * 1000) + 1005,
+          userId: currentUser.id,
+          userName: currentUser.name,
+          issue: document.getElementById('issueType').options[document.getElementById('issueType').selectedIndex].text,
+          description: issueDescription,
+          location: `${lat}, ${lng}`,
+          status: 'pending',
+          date: new Date().toLocaleString()
+        };
+        
+        // Add to requests array
+        serviceRequests.push(newRequest);
+        
+        // Show success message
+        alert('Service request submitted successfully!');
+        
+        // Reset form
+        serviceRequestForm.reset();
+        
+        // Update requests list
+        updateUserRequestsList();
+      });
+      
+      // Initialize tabs
+      const triggerTabList = [].slice.call(document.querySelectorAll('.nav-tabs button'));
+      triggerTabList.forEach(function(triggerEl) {
+        new bootstrap.Tab(triggerEl);
+      });
+    });
+    
+    // Initialize map
+    function initMap() {
+      // Default coordinates (New York City)
+      const defaultLat = 40.7128;
+      const defaultLng = -74.0060;
+      
+      // Create map
+      map = L.map('map').setView([defaultLat, defaultLng], 13);
+      
+      // Add tile layer (OpenStreetMap)
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+      }).addTo(map);
+      
+      // Add user marker
+      userMarker = L.marker([defaultLat, defaultLng], {
+        draggable: true,
+        icon: L.icon({
+          iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
+          shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+          iconSize: [25, 41],
+          iconAnchor: [12, 41],
+          popupAnchor: [1, -34],
+          shadowSize: [41, 41]
+        })
+      }).addTo(map);
+      
+      // Set location inputs
+      document.getElementById('locationLat').value = defaultLat;
+      document.getElementById('locationLng').value = defaultLng;
+      
+      // Update location when marker is dragged
+      userMarker.on('dragend', function(event) {
+        const marker = event.target;
+        const position = marker.getLatLng();
+        document.getElementById('locationLat').value = position.lat.toFixed(6);
+        document.getElementById('locationLng').value = position.lng.toFixed(6);
+      });
+      
+      // Try to get user's actual location
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          function(position) {
+            const userLat = position.coords.latitude;
+            const userLng = position.coords.longitude;
+            
+            // Update map view
+            map.setView([userLat, userLng], 15);
+            
+            // Update marker position
+            userMarker.setLatLng([userLat, userLng]);
+            
+            // Update location inputs
+            document.getElementById('locationLat').value = userLat.toFixed(6);
+            document.getElementById('locationLng').value = userLng.toFixed(6);
+          },
+          function(error) {
+            console.log('Geolocation error:', error);
+          }
+        );
+      }
+    }
+    
+    // Show specific page
+    function showPage(pageId) {
+      // Hide all pages
+      document.querySelectorAll('.roadguard-container').forEach(page => {
+        page.style.display = 'none';
+      });
+      
+      // Show requested page
+      document.getElementById(pageId).style.display = 'flex';
+    }
+    
+    // Show dashboard based on role
+    function showDashboard(role) {
+      // Hide login page
+      document.getElementById('loginPage').style.display = 'none';
+      
+      // Show appropriate dashboard
+      if (role === 'user') {
+        document.getElementById('userName').textContent = currentUser.name;
+        updateUserRequestsList();
+        document.getElementById('userDashboard').style.display = 'flex';
+      } else if (role === 'admin') {
+        updateAdminRequestsList();
+        updateMechanicsList();
+        updateUsersList();
+        document.getElementById('adminDashboard').style.display = 'flex';
+      } else if (role === 'mechanic') {
+        document.getElementById('mechanicName').textContent = currentUser.name;
+        updateMechanicJobs();
+        document.getElementById('mechanicDashboard').style.display = 'flex';
+      }
+    }
+    
+    // Update user requests list
+    function updateUserRequestsList() {
+      const container = document.getElementById('userRequestsList');
+      const userRequests = serviceRequests.filter(req => req.userId === currentUser.id && req.status !== 'completed');
+      
+      if (userRequests.length === 0) {
+        container.innerHTML = '<div class="alert alert-info">You don\'t have any active service requests.</div>';
+        return;
+      }
+      
+      let html = '';
+      userRequests.forEach(request => {
+        const statusClass = getStatusClass(request.status);
+        const statusText = getStatusText(request.status);
+        
+        html += `
+          <div class="card service-card service-user mb-3">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-center">
+                <div>
+                  <h5 class="card-title">${request.issue}</h5>
+                  <p class="card-text mb-1">Location: ${request.location}</p>
+                  <p class="card-text mb-1">Date: ${request.date}</p>
+                  ${request.description ? `<p class="card-text">Description: ${request.description}</p>` : ''}
+                </div>
+                <div class="text-end">
+                  <span class="status-badge status-${statusClass}">${statusText}</span>
+                  ${request.status === 'assigned' || request.status === 'in progress' ? `
+                    <p class="mb-0 mt-2">Mechanic: ${getMechanicName(request.mechanicId)}</p>
+                  ` : ''}
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+      
+      container.innerHTML = html;
+    }
+    
+    // Update admin requests list
+    function updateAdminRequestsList() {
+      const container = document.getElementById('adminRequestsList');
+      const pendingRequests = serviceRequests.filter(req => req.status === 'pending');
+      
+      if (pendingRequests.length === 0) {
+        container.innerHTML = '<div class="alert alert-info">No pending service requests.</div>';
+        return;
+      }
+      
+      let html = '';
+      pendingRequests.forEach(request => {
+        html += `
+          <div class="card service-card service-admin mb-3">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-center">
+                <div>
+                  <h5 class="card-title">${request.issue}</h5>
+                  <p class="card-text mb-1">User: ${request.userName}</p>
+                  <p class="card-text mb-1">Location: ${request.location}</p>
+                  <p class="card-text mb-1">Date: ${request.date}</p>
+                  ${request.description ? `<p class="card-text">Description: ${request.description}</p>` : ''}
+                </div>
+                <div class="text-end">
+                  <span class="status-badge status-pending">Pending</span>
+                  <div class="mt-2">
+                    <select class="form-select form-select-sm" id="mechanicSelect-${request.id}">
+                      <option value="">Assign Mechanic</option>
+                      ${mechanics.filter(m => m.available).map(m => `
+                        <option value="${m.id}">${m.name} (${m.speciality})</option>
+                      `).join('')}
+                    </select>
+                    <button class="btn btn-sm btn-admin mt-2" onclick="assignMechanic(${request.id})">Assign</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+      
+      container.innerHTML = html;
+    }
+    
+    // Update mechanics list
+    function updateMechanicsList() {
+      const container = document.getElementById('mechanicsList');
+      
+      let html = '';
+      mechanics.forEach(mechanic => {
+        html += `
+          <div class="card mb-3">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-center">
+                <div>
+                  <h5 class="card-title">${mechanic.name}</h5>
+                  <p class="card-text mb-1">Speciality: ${mechanic.speciality}</p>
+                  <p class="card-text mb-1">Rating: ${mechanic.rating} ★</p>
+                </div>
+                <div class="text-end">
+                  <span class="badge ${mechanic.available ? 'bg-success' : 'bg-secondary'}">
+                    ${mechanic.available ? 'Available' : 'Not Available'}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+      
+      container.innerHTML = html;
+    }
+    
+    // Update users list
+    function updateUsersList() {
+      const container = document.getElementById('usersList');
+      
+      let html = '';
+      users.forEach(user => {
+        const userRequests = serviceRequests.filter(req => req.userId === user.id);
+        const completedRequests = serviceRequests.filter(req => req.userId === user.id && req.status === 'completed');
+        
+        html += `
+          <div class="card mb-3">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-center">
+                <div>
+                  <h5 class="card-title">${user.name}</h5>
+                  <p class="card-text mb-1">Email: ${user.email}</p>
+                  <p class="card-text mb-1">Total Requests: ${userRequests.length}</p>
+                  <p class="card-text mb-1">Completed: ${completedRequests.length}</p>
+                </div>
+                <div class="text-end">
+                  <span class="badge bg-primary">${user.role}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+      
+      container.innerHTML = html;
+    }
+    
+    // Update mechanic jobs
+    function updateMechanicJobs() {
+      updateAssignedJobs();
+      updateAvailableJobs();
+      updateCompletedJobs();
+    }
+    
+    // Update assigned jobs for mechanic
+    function updateAssignedJobs() {
+      const container = document.getElementById('assignedJobsList');
+      const assignedJobs = serviceRequests.filter(req => 
+        req.mechanicId === currentUser.id && 
+        (req.status === 'assigned' || req.status === 'in progress')
+      );
+      
+      if (assignedJobs.length === 0) {
+        container.innerHTML = '<div class="alert alert-info">You don\'t have any assigned jobs.</div>';
+        return;
+      }
+      
+      let html = '';
+      assignedJobs.forEach(job => {
+        const statusClass = getStatusClass(job.status);
+        const statusText = getStatusText(job.status);
+        
+        html += `
+          <div class="card service-card service-mechanic mb-3">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-center">
+                <div>
+                  <h5 class="card-title">${job.issue}</h5>
+                  <p class="card-text mb-1">User: ${job.userName}</p>
+                  <p class="card-text mb-1">Location: ${job.location}</p>
+                  <p class="card-text mb-1">Date: ${job.date}</p>
+                  ${job.description ? `<p class="card-text">Description: ${job.description}</p>` : ''}
+                </div>
+                <div class="text-end">
+                  <span class="status-badge status-${statusClass}">${statusText}</span>
+                  <div class="mt-2">
+                    ${job.status === 'assigned' ? `
+                      <button class="btn btn-sm btn-mechanic" onclick="updateJobStatus(${job.id}, 'in progress')">Start Job</button>
+                    ` : ''}
+                    ${job.status === 'in progress' ? `
+                      <button class="btn btn-sm btn-mechanic" onclick="updateJobStatus(${job.id}, 'completed')">Complete Job</button>
+                    ` : ''}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+      
+      container.innerHTML = html;
+    }
+    
+    // Update available jobs for mechanic
+    function updateAvailableJobs() {
+      const container = document.getElementById('availableJobsList');
+      const availableJobs = serviceRequests.filter(req => req.status === 'pending');
+      
+      if (availableJobs.length === 0) {
+        container.innerHTML = '<div class="alert alert-info">No available service requests.</div>';
+        return;
+      }
+      
+      let html = '';
+      availableJobs.forEach(job => {
+        html += `
+          <div class="card mb-3">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-center">
+                <div>
+                  <h5 class="card-title">${job.issue}</h5>
+                  <p class="card-text mb-1">User: ${job.userName}</p>
+                  <p class="card-text mb-1">Location: ${job.location}</p>
+                  <p class="card-text mb-1">Date: ${job.date}</p>
+                  ${job.description ? `<p class="card-text">Description: ${job.description}</p>` : ''}
+                </div>
+                <div class="text-end">
+                  <span class="status-badge status-pending">Pending</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+      
+      container.innerHTML = html;
+    }
+    
+    // Update completed jobs for mechanic
+    function updateCompletedJobs() {
+      const container = document.getElementById('completedJobsList');
+      const completedJobs = serviceRequests.filter(req => 
+        req.mechanicId === currentUser.id && req.status === 'completed'
+      );
+      
+      if (completedJobs.length === 0) {
+        container.innerHTML = '<div class="alert alert-info">You haven\'t completed any jobs yet.</div>';
+        return;
+      }
+      
+      let html = '';
+      completedJobs.forEach(job => {
+        html += `
+          <div class="card mb-3">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-center">
+                <div>
+                  <h5 class="card-title">${job.issue}</h5>
+                  <p class="card-text mb-1">User: ${job.userName}</p>
+                  <p class="card-text mb-1">Location: ${job.location}</p>
+                  <p class="card-text mb-1">Date: ${job.date}</p>
+                  ${job.description ? `<p class="card-text">Description: ${job.description}</p>` : ''}
+                </div>
+                <div class="text-end">
+                  <span class="status-badge status-completed">Completed</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+      
+      container.innerHTML = html;
+    }
+    
+    // Assign mechanic to a service request
+    function assignMechanic(requestId) {
+      const selectElement = document.getElementById(`mechanicSelect-${requestId}`);
+      const mechanicId = parseInt(selectElement.value);
+      
+      if (!mechanicId) {
+        alert('Please select a mechanic');
+        return;
+      }
+      
+      // Find the request
+      const requestIndex = serviceRequests.findIndex(req => req.id === requestId);
+      if (requestIndex === -1) return;
+      
+      // Update the request
+      serviceRequests[requestIndex].status = 'assigned';
+      serviceRequests[requestIndex].mechanicId = mechanicId;
+      
+      // Update the UI
+      updateAdminRequestsList();
+      
+      // If the current user is the assigned mechanic, update their view too
+      if (currentUser.role === 'mechanic' && currentUser.id === mechanicId) {
+        updateMechanicJobs();
+      }
+      
+      alert('Mechanic assigned successfully!');
+    }
+    
+    // Update job status
+    function updateJobStatus(requestId, status) {
+      // Find the request
+      const requestIndex = serviceRequests.findIndex(req => req.id === requestId);
+      if (requestIndex === -1) return;
+      
+      // Update the request
+      serviceRequests[requestIndex].status = status;
+      
+      // Update the UI
+      updateMechanicJobs();
+      
+      // If the status is completed, the user should see the update too
+      if (status === 'completed') {
+        // In a real app, we would notify the user here
+        console.log(`Job ${requestId} completed`);
+      }
+      
+      alert(`Job status updated to ${getStatusText(status)}`);
+    }
+    
+    // Helper function to get status class
+    function getStatusClass(status) {
+      switch(status) {
+        case 'pending': return 'pending';
+        case 'assigned': return 'assigned';
+        case 'in progress': return 'progress';
+        case 'completed': return 'completed';
+        default: return 'pending';
+      }
+    }
+    
+    // Helper function to get status text
+    function getStatusText(status) {
+      switch(status) {
+        case 'pending': return 'Pending';
+        case 'assigned': return 'Assigned';
+        case 'in progress': return 'In Progress';
+        case 'completed': return 'Completed';
+        default: return status;
+      }
+    }
+    
+    // Helper function to get mechanic name
+    function getMechanicName(mechanicId) {
+      const mechanic = mechanics.find(m => m.id === mechanicId);
+      return mechanic ? mechanic.name : 'Unknown Mechanic';
+    }
+  </script>
+</body>
+</html>

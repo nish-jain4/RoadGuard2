@@ -3,98 +3,225 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>RoadGuard Login</title>
+  <title>RoadGuard - Roadside Assistance Login</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <style>
     :root {
-      --primary-color: #4e73df;
-      --primary-hover: #3a5ec0;
+      --primary-color: #2c6ecf;
+      --secondary-color: #ffffff;
+      --primary-hover: #1a5bb8;
+      --road-yellow: #ffd700;
+      --road-gray: #5a6268;
     }
+    
     body {
-      background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+      background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), 
+                  url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect fill="%23333" width="100" height="100"/><path d="M0,50 L100,50" stroke="%23ffd700" stroke-width="4" stroke-dasharray="10,10"/><circle cx="20" cy="50" r="8" fill="%23ffd700"/><circle cx="80" cy="50" r="8" fill="%23ffd700"/></svg>');
+      background-size: cover;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      height: 100vh;
+      overflow: hidden;
     }
+    
+    .roadguard-container {
+      display: flex;
+      height: 100vh;
+      align-items: center;
+      justify-content: center;
+    }
+    
     .login-card {
       border: none;
-      border-radius: 10px;
+      border-radius: 15px;
       overflow: hidden;
-      transition: transform 0.3s ease;
-      max-width: 420px;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      max-width: 450px;
+      width: 100%;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
     }
+    
     .login-card:hover {
       transform: translateY(-5px);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
     }
+    
     .card-header {
-      background-color: var(--primary-color);
+      background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%);
       color: white;
       text-align: center;
-      padding: 1.5rem;
+      padding: 1.8rem;
       font-weight: 600;
+      position: relative;
     }
+    
+    .card-header::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background: var(--secondary-color);
+    }
+    
     .card-body {
-      padding: 5rem;
+      padding: 2.5rem;
     }
+    
+    .logo-container {
+      position: relative;
+      margin-bottom: 1.5rem;
+    }
+    
+    .logo-icon {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto;
+      display: block;
+      background: white;
+      border-radius: 50%;
+      padding: 15px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .logo-icon path {
+      fill: var(--primary-color);
+    }
+    
     .form-control, .form-select {
-      padding: 0.75rem 1rem;
-      border-radius: 5px;
-      border: 1px solid #ddd;
-    }
-    .form-control:focus, .form-select:focus {
-      border-color: var(--primary-color);
-      box-shadow: 0 0 0 0.25rem rgba(78, 115, 223, 0.25);
-    }
-    .btn-login {
-      background-color: var(--primary-color);
-      border: none;
-      padding: 0.75rem;
-      font-weight: 600;
+      padding: 0.85rem 1rem;
+      border-radius: 8px;
+      border: 2px solid #e1e5eb;
       transition: all 0.3s;
     }
-    .btn-login:hover {
-      background-color: var(--primary-hover);
+    
+    .form-control:focus, .form-select:focus {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 0.25rem rgba(44, 110, 207, 0.25);
     }
+    
+    .btn-login {
+      background: linear-gradient(to right, var(--primary-color) 0%, var(--primary-hover) 100%);
+      border: none;
+      padding: 0.9rem;
+      font-weight: 600;
+      transition: all 0.3s;
+      border-radius: 8px;
+      letter-spacing: 0.5px;
+    }
+    
+    .btn-login:hover {
+      background: linear-gradient(to right, var(--primary-hover) 0%, var(--primary-color) 100%);
+      transform: translateY(-2px);
+    }
+    
     .input-icon {
       position: relative;
     }
+    
     .input-icon i {
       position: absolute;
       top: 50%;
       left: 15px;
       transform: translateY(-50%);
       color: #6c757d;
+      z-index: 5;
     }
-    .input-icon input {
-      padding-left: 40px;
+    
+    .input-icon input, .input-icon select {
+      padding-left: 45px;
     }
-    .logo {
-      width: 80px;
-      height: 80px;
-      margin: 0 auto 1rem;
-      display: block;
-    }
+    
     .invalid-feedback {
       display: none;
       color: #dc3545;
       font-size: 0.875rem;
-      margin-top: 0.25rem;
+      margin-top: 0.35rem;
     }
+    
+    .is-invalid {
+      border-color: #dc3545;
+    }
+    
     .is-invalid ~ .invalid-feedback {
       display: block;
+    }
+    
+    .road-line {
+      height: 4px;
+      background: var(--road-yellow);
+      width: 100%;
+      position: absolute;
+      bottom: 0;
+      left: 0;
+    }
+    
+    .welcome-text {
+      font-size: 1.1rem;
+      margin-bottom: 0;
+      opacity: 0.9;
+    }
+    
+    .tagline {
+      font-size: 0.9rem;
+      opacity: 0.8;
+      margin-top: 0.5rem;
+    }
+    
+    .signup-link {
+      text-align: center;
+      margin-top: 1.5rem;
+      font-size: 0.95rem;
+    }
+    
+    .car-animation {
+      position: absolute;
+      bottom: -5px;
+      left: -50px;
+      font-size: 30px;
+      color: var(--secondary-color);
+      animation: drive 15s linear infinite;
+    }
+    
+    @keyframes drive {
+      0% { transform: translateX(-100px); }
+      100% { transform: translateX(1200px); }
+    }
+    
+    .role-description {
+      font-size: 0.8rem;
+      color: #6c757d;
+      margin-top: 0.25rem;
+      margin-left: 45px;
+    }
+    
+    @media (max-width: 576px) {
+      .card-body {
+        padding: 1.8rem;
+      }
+      
+      .login-card {
+        margin: 0 15px;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="container d-flex vh-100 justify-content-center align-items-center">
+  <div class="roadguard-container">
     <div class="card login-card shadow-lg">
       <div class="card-header">
-        <svg class="logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M4 4h16v12H4z" fill="none"/>
-          <path d="M20 2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H4V4h16v12z"/>
-          <path d="M6 6h12v2H6zm0 4h12v2H6zm0 4h6v2H6z"/>
-        </svg>
-        <h4>Welcome to RoadGuard</h4>
-        <p class="mb-0">Please login to continue</p>
+        <div class="logo-container">
+          <svg class="logo-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M12 3c-4.97 0-9 4.03-9 9 0 2.5 1.04 4.76 2.71 6.36l-1.42 1.42C2.56 17.1 1.5 14.38 1.5 12c0-5.79 4.71-10.5 10.5-10.5S22.5 6.21 22.5 12c0 2.38-1.06 5.1-2.79 6.78l-1.42-1.42C20.96 16.76 22 14.5 22 12c0-5.97-4.03-9-9-9zm0 16c-3.86 0-7-3.14-7-7s3.14-7 7-7 7 3.14 7 7-3.14 7-7 7zm-1.5-12h3v6h-3V7zm6 1l3 3-3 3v-2h-4v-2h4V8zm-12 0v2h4v2H5v2l-3-3 3-3z"/>
+          </svg>
+        </div>
+        <h4>RoadGuard</h4>
+        <p class="welcome-text">Roadside Assistance Platform</p>
+        <p class="tagline">Help is just a login away</p>
+        <div class="car-animation">
+          <i class="fas fa-car-side"></i>
+        </div>
       </div>
       <div class="card-body">
         <form id="loginForm" novalidate>
@@ -103,6 +230,7 @@
             <input type="email" id="loginEmail" class="form-control" placeholder="Email address" required />
             <div class="invalid-feedback">Please enter a valid email address</div>
           </div>
+          
           <div class="mb-4 input-icon">
             <i class="fas fa-lock"></i>
             <input type="password" id="loginPassword" class="form-control" placeholder="Password" required />
@@ -111,13 +239,16 @@
             
           <div class="mb-4 input-icon">
             <i class="fas fa-user-tag"></i>
-            <select id="loginRole" class="form-select" required />
-              <option value="" disabled selected>..... Select your role</option>
-              <option value="user">User</option>
-              <option value="agent">Mechanic</option>
+            <select id="loginRole" class="form-select" required>
+              <option value="" disabled selected>Select your role</option>
+              <option value="user">Driver/User</option>
+              <option value="mechanic">Mechanic</option>
               <option value="admin">Administrator</option>
             </select>
             <div class="invalid-feedback">Please select your role</div>
+            <div class="role-description" id="roleDescription">
+              Select your role to continue
+            </div>
           </div>
           
           <button type="submit" class="btn btn-primary btn-login w-100 mb-3">
@@ -127,6 +258,10 @@
           <div class="text-center mt-3">
             <a href="forgotpass.html" class="text-decoration-none">Forgot password?</a>
           </div>
+          
+          <div class="signup-link">
+            <p>Don't have an account? <a href="register.html" class="text-decoration-none">Sign up here</a></p>
+          </div>
         </form>
       </div>
     </div>
@@ -135,6 +270,25 @@
   <script>
     document.addEventListener('DOMContentLoaded', function() {
       const loginForm = document.getElementById('loginForm');
+      const roleSelect = document.getElementById('loginRole');
+      const roleDescription = document.getElementById('roleDescription');
+      
+      // Update role description when selection changes
+      roleSelect.addEventListener('change', function() {
+        switch(this.value) {
+          case "user":
+            roleDescription.textContent = "Request roadside assistance services";
+            break;
+          case "mechanic":
+            roleDescription.textContent = "Provide roadside assistance services";
+            break;
+          case "admin":
+            roleDescription.textContent = "Manage platform users and services";
+            break;
+          default:
+            roleDescription.textContent = "Select your role to continue";
+        }
+      });
       
       loginForm.addEventListener('submit', function(e) {
         e.preventDefault();
@@ -155,7 +309,6 @@
           isValid = false;
         }
         
-
         if (!password.value || password.value.length < 6) {
           password.classList.add('is-invalid');
           isValid = false;
@@ -183,19 +336,67 @@
             }));
             
             // Redirect based on role
-            if (role.value === "user") {
-              window.location.href = "user-dashboard.html";
-            } else if (role.value === "agent") {
-              window.location.href = "agent-dashboard.html";
-            } else {
-              window.location.href = "admin-dashboard.html";
+            switch(role.value) {
+              case "user":
+                window.location.href = "user-dashboard.html";
+                break;
+              case "mechanic":
+                window.location.href = "agent-dashboard.html";
+                break;
+              case "admin":
+                window.location.href = "admin_dashboard.html";
+                break;
+              default:
+                window.location.href = "user-dashboard.html";
             }
           }, 1500);
         }
       });
       
       // Focus email field on page load
-      document.getElementById('loginEmail').focus();
+      document.getElementById('loginForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  
+  const email = document.getElementById('loginEmail').value;
+  const password = document.getElementById('loginPassword').value;
+  const role = document.getElementById('loginRole').value;
+  
+  try {
+    const response = await fetch('http://localhost:3000/api/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ email, password, role })
+    });
+    
+    const data = await response.json();
+    
+    if (response.ok) {
+      // Save token and user data
+      localStorage.setItem('authToken', data.token);
+      localStorage.setItem('userData', JSON.stringify(data.user));
+      
+      // Redirect based on role
+      switch(data.user.role) {
+        case 'user':
+          window.location.href = 'user-dashboard.html';
+          break;
+        case 'mechanic':
+          window.location.href = 'agent-dashboard.html';
+          break;
+        case 'admin':
+          window.location.href = 'admin_dashboard.html';
+          break;
+      }
+    } else {
+      alert(data.error || 'Login failed');
+    }
+  } catch (error) {
+    console.error('Error:', error);
+    alert('Login failed. Please try again.');
+  }
+});
     });
   </script>
 </body>
