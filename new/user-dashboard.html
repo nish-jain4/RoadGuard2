@@ -1,0 +1,1267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Dashboard | RoadGuard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        :root {
+            --primary-color: #4e73df;
+            --primary-hover: #3a5ec0;
+            --success-color: #1cc88a;
+            --warning-color: #f6c23e;
+            --danger-color: #e74a3b;
+            --user-color: #4CAF50;
+            --admin-color: #f44336;
+            --mechanic-color: #FF9800;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fc;
+        }
+        
+        .navbar {
+            background-color: white;
+            box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+        }
+        
+        .sidebar {
+            height: 100vh;
+            position: fixed;
+            background: linear-gradient(180deg, var(--primary-color) 10%, #224abe 100%);
+            color: white;
+            width: 14rem;
+            transition: all 0.3s;
+            z-index: 1000;
+        }
+        
+        .main-content {
+            margin-left: 14rem;
+            padding: 2rem;
+            transition: all 0.3s;
+        }
+        
+        .card {
+            border: none;
+            border-radius: 0.35rem;
+            box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.1);
+            margin-bottom: 1.5rem;
+        }
+        
+        .card-header {
+            background-color: #f8f9fc;
+            border-bottom: 1px solid #e3e6f0;
+            font-weight: 600;
+        }
+        
+        .ticket-card {
+            transition: all 0.2s;
+            border-left: 0.25rem solid var(--primary-color);
+        }
+        
+        .ticket-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+        }
+        
+        .ticket-status {
+            font-weight: 600;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+        }
+        
+        .status-open {
+            background-color: rgba(78, 115, 223, 0.1);
+            color: var(--primary-color);
+        }
+        
+        .status-resolved {
+            background-color: rgba(28, 200, 138, 0.1);
+            color: var(--success-color);
+        }
+        
+        .status-pending {
+            background-color: rgba(246, 194, 62, 0.1);
+            color: var(--warning-color);
+        }
+        
+        .status-closed {
+            background-color: rgba(231, 74, 59, 0.1);
+            color: var(--danger-color);
+        }
+        
+        .badge-count {
+            font-size: 0.75rem;
+            padding: 0.35em 0.65em;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+            border-color: var(--primary-hover);
+        }
+        
+        .sidebar-link {
+            color: rgba(255, 255, 255, 0.8);
+            padding: 1rem;
+            display: block;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+        
+        .sidebar-link:hover, .sidebar-link.active {
+            color: white;
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .sidebar-link i {
+            margin-right: 0.5rem;
+        }
+        
+        .sidebar-divider {
+            border-top: 1px solid rgba(255, 255, 255, 0.15);
+            margin: 1rem 0;
+        }
+        
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        
+        .dropdown-menu {
+            border: none;
+            box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+        }
+        
+        #map {
+            height: 300px;
+            width: 100%;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            z-index: 1;
+        }
+        
+        .service-type-card {
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .service-type-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        }
+        
+        .service-type-card.selected {
+            border: 2px solid var(--primary-color);
+        }
+        
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 9999;
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 0;
+                overflow: hidden;
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .sidebar.active {
+                width: 14rem;
+            }
+            
+            .main-content.active {
+                margin-left: 14rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="text-center py-4">
+            <h4 class="text-white">RoadGuard</h4>
+        </div>
+        
+        <div class="sidebar-divider"></div>
+        
+        <a href="#" class="sidebar-link active">
+            <i class="fas fa-fw fa-tachometer-alt"></i>
+            <span>Dashboard</span>
+        </a>
+        
+        <a href="#" class="sidebar-link" onclick="showSection('myTicketsSection')">
+            <i class="fas fa-fw fa-ticket-alt"></i>
+            <span>My Tickets</span>
+        </a>
+        
+        <a href="#" class="sidebar-link" data-bs-toggle="modal" data-bs-target="#newTicketModal">
+            <i class="fas fa-fw fa-plus-circle"></i>
+            <span>New Ticket</span>
+        </a>
+        
+        <a href="#" class="sidebar-link" onclick="showSection('mapSection')">
+            <i class="fas fa-fw fa-map-marker-alt"></i>
+            <span>Roadside Assistance</span>
+        </a>
+        
+        <div class="sidebar-divider"></div>
+        
+        <a href="#" class="sidebar-link">
+            <i class="fas fa-fw fa-cog"></i>
+            <span>Settings</span>
+        </a>
+        
+        <a href="#" class="sidebar-link" onclick="logout()">
+            <i class="fas fa-fw fa-sign-out-alt"></i>
+            <span>Logout</span>
+        </a>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content" id="mainContent">
+        <!-- Top Navigation -->
+        <nav class="navbar navbar-expand navbar-light mb-4">
+            <div class="container-fluid">
+                <button class="btn btn-link d-md-none" onclick="toggleSidebar()">
+                    <i class="fas fa-bars"></i>
+                </button>
+                
+                <div class="d-none d-sm-inline-block form-inline mr-auto ml-md-3 my-2 my-md-0 mw-100 navbar-search">
+                    <div class="input-group">
+                        <input type="text" class="form-control bg-light border-0 small" placeholder="Search tickets..." aria-label="Search">
+                        <div class="input-group-append">
+                            <button class="btn btn-primary" type="button">
+                                <i class="fas fa-search fa-sm"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <ul class="navbar-nav ml-auto">
+                    <li class="nav-item dropdown no-arrow mx-1">
+                        <a class="nav-link dropdown-toggle" href="#" id="alertsDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-bell fa-fw"></i>
+                            <span class="badge badge-danger badge-count">3</span>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-right shadow">
+                            <h6 class="dropdown-header">Notifications</h6>
+                            <a class="dropdown-item d-flex align-items-center" href="#">
+                                <div class="mr-3">
+                                    <div class="icon-circle bg-primary">
+                                        <i class="fas fa-tools text-white"></i>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="small text-gray-500">August 2, 2023</div>
+                                    <span>Your roadside assistance request has been assigned to a mechanic.</span>
+                                </div>
+                            </a>
+                            <a class="dropdown-item d-flex align-items-center" href="#">
+                                <div class="mr-3">
+                                    <div class="icon-circle bg-success">
+                                        <i class="fas fa-check text-white"></i>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="small text-gray-500">August 1, 2023</div>
+                                    <span>Your ticket #1034 has been resolved.</span>
+                                </div>
+                            </a>
+                            <a class="dropdown-item text-center small text-gray-500" href="#">Show All Notifications</a>
+                        </div>
+                    </li>
+                    
+                    <li class="nav-item dropdown no-arrow">
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+                            <img class="avatar mr-2" src="https://ui-avatars.com/api/?name=User+Name&background=4e73df&color=fff" alt="User">
+                            <span class="d-none d-lg-inline">User Name</span>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-right shadow">
+                            <a class="dropdown-item" href="#">
+                                <i class="fas fa-user fa-sm fa-fw mr-2"></i>
+                                Profile
+                            </a>
+                            <a class="dropdown-item" href="#">
+                                <i class="fas fa-cogs fa-sm fa-fw mr-2"></i>
+                                Settings
+                            </a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="#" onclick="logout()">
+                                <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2"></i>
+                                Logout
+                            </a>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <!-- Dashboard Section -->
+        <div class="dashboard-section" id="dashboardSection">
+            <!-- Page Heading -->
+            <div class="d-sm-flex align-items-center justify-content-between mb-4">
+                <h1 class="h3 mb-0 text-gray-800">Dashboard</h1>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#newTicketModal">
+                    <i class="fas fa-plus fa-sm text-white-50"></i> New Ticket
+                </button>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="row">
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card border-left-primary shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                        Open Tickets</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">4</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-ticket-alt fa-2x text-gray-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card border-left-success shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                        Resolved Tickets</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">12</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card border-left-warning shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                        Pending Tickets</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">2</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-clock fa-2x text-gray-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card border-left-danger shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
+                                        Closed Tickets</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">7</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-times-circle fa-2x text-gray-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Map and Services Section -->
+            <div class="row">
+                <div class="col-lg-8 mb-4">
+                    <div class="card shadow mb-4">
+                        <div class="card-header py-3">
+                            <h6 class="m-0 font-weight-bold text-primary">Roadside Assistance Map</h6>
+                        </div>
+                        <div class="card-body">
+                            <div id="map"></div>
+                            <div class="mt-3">
+                                <button class="btn btn-primary" onclick="locateMe()">
+                                    <i class="fas fa-location-arrow"></i> Use My Current Location
+                                </button>
+                                <button class="btn btn-outline-primary ms-2" onclick="showNearbyMechanics()">
+                                    <i class="fas fa-tools"></i> Find Nearby Mechanics
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4 mb-4">
+                    <div class="card shadow">
+                        <div class="card-header py-3">
+                            <h6 class="m-0 font-weight-bold text-primary">Quick Services</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-6 mb-3">
+                                    <div class="card service-type-card text-center" onclick="selectService('flatTire')">
+                                        <div class="card-body">
+                                            <i class="fas fa-car-burst fa-2x text-danger mb-2"></i>
+                                            <h6 class="card-title">Flat Tyre</h6>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-6 mb-3">
+                                    <div class="card service-type-card text-center" onclick="selectService('battery')">
+                                        <div class="card-body">
+                                            <i class="fas fa-battery-quarter fa-2x text-warning mb-2"></i>
+                                            <h6 class="card-title">Jump Start</h6>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-6 mb-3">
+                                    <div class="card service-type-card text-center" onclick="selectService('fuel')">
+                                        <div class="card-body">
+                                            <i class="fas fa-gas-pump fa-2x text-primary mb-2"></i>
+                                            <h6 class="card-title">Out of Fuel</h6>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-6 mb-3">
+                                    <div class="card service-type-card text-center" onclick="selectService('lockout')">
+                                        <div class="card-body">
+                                            <i class="fas fa-key fa-2x text-info mb-2"></i>
+                                            <h6 class="card-title">Locked Out</h6>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="text-center mt-3">
+                                <button class="btn btn-primary w-100" data-bs-toggle="modal" data-bs-target="#roadsideAssistanceModal">
+                                    Request Roadside Assistance
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tickets Section -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Recent Tickets</h6>
+                    <div class="dropdown no-arrow">
+                        <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-bs-toggle="dropdown">
+                            <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-right shadow">
+                            <a class="dropdown-item" href="#">Export Tickets</a>
+                            <a class="dropdown-item" href="#">Print Tickets</a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="#">View All Tickets</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Filters -->
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <select id="statusFilter" class="form-select">
+                                <option value="">All Statuses</option>
+                                <option value="Open">Open</option>
+                                <option value="Pending">Pending</option>
+                                <option value="Resolved">Resolved</option>
+                                <option value="Closed">Closed</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <select id="categoryFilter" class="form-select">
+                                <option value="">All Categories</option>
+                                <option value="Login">Engine Issues</option>
+                                <option value="Email">Electrical problems</option>
+                                <option value="Billing">Break system Issues</option>
+                                <option value="Technical">Tyre Issues</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <select id="sortFilter" class="form-select">
+                                <option value="recent">Recently Updated</option>
+                                <option value="replies">Most Replies</option>
+                                <option value="oldest">Oldest First</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <button class="btn btn-primary w-100" onclick="applyFilters()">
+                                <i class="fas fa-filter"></i> Apply Filters
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Tickets List -->
+                    <div id="tickets" class="list-group"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- My Tickets Section -->
+        <div class="dashboard-section" id="myTicketsSection" style="display: none;">
+            <div class="d-sm-flex align-items-center justify-content-between mb-4">
+                <h1 class="h3 mb-0 text-gray-800">My Tickets</h1>
+            </div>
+            <div class="card shadow mb-4">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered" id="ticketsTable" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>Ticket #</th>
+                                    <th>Subject</th>
+                                    <th>Status</th>
+                                    <th>Priority</th>
+                                    <th>Created</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>1034</td>
+                                    <td>Cannot login to my account</td>
+                                    <td><span class="badge bg-success">Resolved</span></td>
+                                    <td><span class="badge bg-warning">Medium</span></td>
+                                    <td>2023-07-30</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-primary">View</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>1035</td>
+                                    <td>Email notifications not working</td>
+                                    <td><span class="badge bg-primary">Open</span></td>
+                                    <td><span class="badge bg-info">Low</span></td>
+                                    <td>2023-08-01</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-primary">View</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>1036</td>
+                                    <td>Billing discrepancy for August</td>
+                                    <td><span class="badge bg-warning">Pending</span></td>
+                                    <td><span class="badge bg-warning">Medium</span></td>
+                                    <td>2023-08-02</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-primary">View</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Map Section -->
+        <div class="dashboard-section" id="mapSection" style="display: none;">
+            <div class="d-sm-flex align-items-center justify-content-between mb-4">
+                <h1 class="h3 mb-0 text-gray-800">Roadside Assistance</h1>
+            </div>
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Request Assistance</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div id="assistanceMap" style="height: 400px; border-radius: 8px;"></div>
+                        </div>
+                        <div class="col-md-4">
+                            <h5>Service Options</h5>
+                            <div class="list-group mb-3">
+                                <a href="#" class="list-group-item list-group-item-action">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h6 class="mb-1">Tire Change</h6>
+                                        <small>$50</small>
+                                    </div>
+                                    <p class="mb-1">Flat tire replacement service</p>
+                                </a>
+                                <a href="#" class="list-group-item list-group-item-action">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h6 class="mb-1">Jump Start</h6>
+                                        <small>$30</small>
+                                    </div>
+                                    <p class="mb-1">Battery jump start service</p>
+                                </a>
+                                <a href="#" class="list-group-item list-group-item-action">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h6 class="mb-1">Fuel Delivery</h6>
+                                        <small>$40 + fuel cost</small>
+                                    </div>
+                                    <p class="mb-1">Emergency fuel delivery</p>
+                                </a>
+                            </div>
+                            <button class="btn btn-primary w-100" data-bs-toggle="modal" data-bs-target="#roadsideAssistanceModal">
+                                Request Assistance
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- New Ticket Modal -->
+    <div class="modal fade" id="newTicketModal" tabindex="-1" aria-labelledby="newTicketModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="newTicketModalLabel">Create New Ticket</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="ticketForm">
+                        <div class="mb-3">
+                            <label for="subject" class="form-label">Subject</label>
+                            <input type="text" class="form-control" id="subject" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="createCategory" class="form-label">Category</label>
+                            <select class="form-select" id="createCategory" required>
+                                <option value="">Select a category</option>
+                                <option value="Login">Login Issues</option>
+                                <option value="Email">Email Problems</option>
+                                <option value="Billing">Billing Questions</option>
+                                <option value="Technical">Technical Support</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="priority" class="form-label">Priority</label>
+                            <select class="form-select" id="priority">
+                                <option value="Low">Low</option>
+                                <option value="Medium" selected>Medium</option>
+                                <option value="High">High</option>
+                                <option value="Urgent">Urgent</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="desc" class="form-label">Description</label>
+                            <textarea class="form-control" id="desc" rows="5" required></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="attachment" class="form-label">Attachments</label>
+                            <input class="form-control" type="file" id="attachment" multiple>
+                            <small class="text-muted">You can attach multiple files (max 5MB each)</small>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="createTicket()">
+                        <i class="fas fa-paper-plane me-2"></i> Submit Ticket
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Roadside Assistance Modal -->
+    <div class="modal fade" id="roadsideAssistanceModal" tabindex="-1" aria-labelledby="roadsideAssistanceModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="roadsideAssistanceModalLabel">Request Roadside Assistance</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="assistanceForm">
+                        <div class="mb-3">
+                            <label for="serviceType" class="form-label">Service Type</label>
+                            <select class="form-select" id="serviceType" required>
+                                <option value="">Select service type</option>
+                                <option value="flatTire">Flat Tire</option>
+                                <option value="battery">Jump Start</option>
+                                <option value="fuel">Out of Fuel</option>
+                                <option value="lockout">Locked Out</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="vehicleType" class="form-label">Vehicle Type</label>
+                            <select class="form-select" id="vehicleType" required>
+                                <option value="">Select vehicle type</option>
+                                <option value="sedan">Sedan</option>
+                                <option value="suv">SUV</option>
+                                <option value="truck">Truck</option>
+                                <option value="motorcycle">Motorcycle</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="locationDetails" class="form-label">Location Details</label>
+                            <textarea class="form-control" id="locationDetails" rows="3" required></textarea>
+                            <small class="text-muted">Please provide specific location details (landmarks, mile markers, etc.)</small>
+                        </div>
+                        <div class="mb-3">
+                            <label for="assistanceDesc" class="form-label">Problem Description</label>
+                            <textarea class="form-control" id="assistanceDesc" rows="3" required></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Your Location</label>
+                            <div class="d-flex">
+                                <input type="text" class="form-control me-2" id="assistanceLat" placeholder="Latitude" readonly>
+                                <input type="text" class="form-control" id="assistanceLng" placeholder="Longitude" readonly>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="requestAssistance()">
+                        <i class="fas fa-tools me-2"></i> Request Assistance
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // Check authentication
+        document.addEventListener('DOMContentLoaded', function() {
+            const token = localStorage.getItem("currentUser");
+            if (!token) window.location.href = "login.html";
+            
+            loadTickets();
+            initMap();
+            initAssistanceMap();
+        });
+
+        let tickets = [];
+        let currentUser = JSON.parse(localStorage.getItem("currentUser"));
+        let map, assistanceMap, userMarker, assistanceMarker;
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+            document.getElementById('mainContent').classList.toggle('active');
+        }
+
+        function showSection(sectionId) {
+            // Hide all sections
+            document.querySelectorAll('.dashboard-section').forEach(section => {
+                section.style.display = 'none';
+            });
+            
+            // Show the selected section
+            document.getElementById(sectionId).style.display = 'block';
+        }
+
+        function initMap() {
+            // Default coordinates (New York City)
+            const defaultLat = 40.7128;
+            const defaultLng = -74.0060;
+            
+            // Create map
+            map = L.map('map').setView([defaultLat, defaultLng], 13);
+            
+            // Add tile layer (OpenStreetMap)
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
+            
+            // Add user marker
+            userMarker = L.marker([defaultLat, defaultLng], {
+                draggable: true,
+                icon: L.icon({
+                    iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
+                    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+                    iconSize: [25, 41],
+                    iconAnchor: [12, 41],
+                    popupAnchor: [1, -34],
+                    shadowSize: [41, 41]
+                })
+            }).addTo(map);
+            
+            // Update location when marker is dragged
+            userMarker.on('dragend', function(event) {
+                const marker = event.target;
+                const position = marker.getLatLng();
+                document.getElementById('assistanceLat').value = position.lat.toFixed(6);
+                document.getElementById('assistanceLng').value = position.lng.toFixed(6);
+            });
+            
+            // Try to get user's actual location
+            locateMe();
+        }
+
+        function initAssistanceMap() {
+            // Default coordinates (New York City)
+            const defaultLat = 40.7128;
+            const defaultLng = -74.0060;
+            
+            // Create map
+            assistanceMap = L.map('assistanceMap').setView([defaultLat, defaultLng], 13);
+            
+            // Add tile layer (OpenStreetMap)
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(assistanceMap);
+            
+            // Add user marker
+            assistanceMarker = L.marker([defaultLat, defaultLng], {
+                draggable: true,
+                icon: L.icon({
+                    iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
+                    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+                    iconSize: [25, 41],
+                    iconAnchor: [12, 41],
+                    popupAnchor: [1, -34],
+                    shadowSize: [41, 41]
+                })
+            }).addTo(assistanceMap);
+            
+            // Update location when marker is dragged
+            assistanceMarker.on('dragend', function(event) {
+                const marker = event.target;
+                const position = marker.getLatLng();
+                document.getElementById('assistanceLat').value = position.lat.toFixed(6);
+                document.getElementById('assistanceLng').value = position.lng.toFixed(6);
+            });
+        }
+
+        function locateMe() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    function(position) {
+                        const userLat = position.coords.latitude;
+                        const userLng = position.coords.longitude;
+                        
+                        // Update map view
+                        map.setView([userLat, userLng], 15);
+                        assistanceMap.setView([userLat, userLng], 15);
+                        
+                        // Update marker position
+                        userMarker.setLatLng([userLat, userLng]);
+                        assistanceMarker.setLatLng([userLat, userLng]);
+                        
+                        // Update location inputs
+                        document.getElementById('assistanceLat').value = userLat.toFixed(6);
+                        document.getElementById('assistanceLng').value = userLng.toFixed(6);
+                    },
+                    function(error) {
+                        console.log('Geolocation error:', error);
+                        showToast('Unable to get your location. Please enable location services.', 'error');
+                    }
+                );
+            } else {
+                showToast('Geolocation is not supported by this browser.', 'error');
+            }
+        }
+
+        function showNearbyMechanics() {
+            // Simulate finding nearby mechanics
+            showToast('Finding nearby mechanics...', 'info');
+            
+            // Simulate API call delay
+            setTimeout(() => {
+                // Add mechanic markers to map
+                const userLat = userMarker.getLatLng().lat;
+                const userLng = userMarker.getLatLng().lng;
+                
+                // Add some simulated mechanic locations
+                for (let i = 0; i < 5; i++) {
+                    const offsetLat = (Math.random() - 0.5) * 0.02;
+                    const offsetLng = (Math.random() - 0.5) * 0.02;
+                    
+                    L.marker([userLat + offsetLat, userLng + offsetLng], {
+                        icon: L.icon({
+                            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+                            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+                            iconSize: [25, 41],
+                            iconAnchor: [12, 41],
+                            popupAnchor: [1, -34],
+                            shadowSize: [41, 41]
+                        })
+                    }).addTo(map).bindPopup(`<b>Mechanic Service ${i+1}</b><br>Estimated arrival: ${Math.floor(Math.random() * 20) + 10} minutes`);
+                }
+                
+                showToast('Found 5 mechanics nearby!', 'success');
+            }, 1500);
+        }
+
+        function selectService(serviceType) {
+            // Highlight selected service
+            document.querySelectorAll('.service-type-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            
+            event.currentTarget.classList.add('selected');
+            
+            // Set the service type in the modal
+            document.getElementById('serviceType').value = serviceType;
+            
+            // Show the assistance modal
+            const modal = new bootstrap.Modal(document.getElementById('roadsideAssistanceModal'));
+            modal.show();
+        }
+
+        function requestAssistance() {
+            const serviceType = document.getElementById('serviceType').value;
+            const vehicleType = document.getElementById('vehicleType').value;
+            const locationDetails = document.getElementById('locationDetails').value;
+            const assistanceDesc = document.getElementById('assistanceDesc').value;
+            
+            if (!serviceType || !vehicleType || !locationDetails || !assistanceDesc) {
+                showToast('Please fill all required fields', 'error');
+                return;
+            }
+            
+            // Simulate API call
+            showToast('Requesting roadside assistance...', 'info');
+            
+            setTimeout(() => {
+                // Show success message
+                showToast('Roadside assistance requested successfully! A mechanic will contact you shortly.', 'success');
+                
+                // Close the modal
+                const modal = bootstrap.Modal.getInstance(document.getElementById('roadsideAssistanceModal'));
+                modal.hide();
+                
+                // Reset form
+                document.getElementById('assistanceForm').reset();
+            }, 2000);
+        }
+
+        function loadTickets() {
+            // Simulated API call with more realistic data
+            tickets = [
+                {
+                    id: 1,
+                    subject: "Cannot login to my account",
+                    category: "Login",
+                    description: "I'm unable to login to my account despite entering the correct credentials. I've tried resetting my password but still no success.",
+                    status: "Open",
+                    priority: "High",
+                    replies: 3,
+                    updated: "2023-08-02",
+                    created: "2023-07-30",
+                    agent: "Support Team"
+                },
+                {
+                    id: 2,
+                    subject: "Email notifications not working",
+                    category: "Email",
+                    description: "I'm not receiving any email notifications for ticket updates. I've checked my spam folder and email settings.",
+                    status: "Resolved",
+                    priority: "Medium",
+                    replies: 1,
+                    updated: "2023-07-30",
+                    created: "2023-07-25",
+                    agent: "John Doe"
+                },
+                {
+                    id: 3,
+                    subject: "Billing discrepancy for August",
+                    category: "Billing",
+                    description: "There seems to be an incorrect charge on my August invoice. Can you please verify and correct this?",
+                    status: "Pending",
+                    priority: "Medium",
+                    replies: 2,
+                    updated: "2023-07-28",
+                    created: "2023-07-27",
+                    agent: "Billing Team"
+                },
+                {
+                    id: 4,
+                    subject: "Feature request: Dark mode",
+                    category: "Feature Request",
+                    description: "Would love to see a dark mode option in the dashboard interface to reduce eye strain during night work.",
+                    status: "Open",
+                    priority: "Low",
+                    replies: 0,
+                    updated: "2023-08-01",
+                    created: "2023-08-01",
+                    agent: "Product Team"
+                }
+            ];
+
+            renderTickets(tickets);
+        }
+
+        function renderTickets(ticketsToRender) {
+            const container = document.getElementById("tickets");
+            container.innerHTML = "";
+            
+            if (ticketsToRender.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-5">
+                        <i class="fas fa-ticket-alt fa-3x text-gray-400 mb-3"></i>
+                        <h5 class="text-gray-500">No tickets found</h5>
+                        <p>Try adjusting your filters or create a new ticket</p>
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#newTicketModal">
+                            <i class="fas fa-plus me-2"></i> Create Ticket
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+            
+            ticketsToRender.forEach(ticket => {
+                const ticketElement = document.createElement("a");
+                ticketElement.href = "#";
+                ticketElement.className = "list-group-item list-group-item-action";
+                ticketElement.innerHTML = `
+                    <div class="d-flex w-100 justify-content-between">
+                        <h5 class="mb-1">${ticket.subject}</h5>
+                        <small class="text-muted">${ticket.updated}</small>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div>
+                            <span class="ticket-status status-${ticket.status.toLowerCase()}">${ticket.status}</span>
+                            <span class="badge bg-light text-dark ms-2">${ticket.category}</span>
+                            <span class="badge bg-primary badge-count ms-2" title="Priority">${ticket.priority}</span>
+                        </div>
+                        <div>
+                            <span class="badge bg-light text-dark" title="Replies">
+                                <i class="fas fa-comments me-1"></i> ${ticket.replies}
+                            </span>
+                        </div>
+                    </div>
+                    <p class="mb-1 text-muted">${ticket.description.substring(0, 100)}${ticket.description.length > 100 ? '...' : ''}</p>
+                    <small class="text-muted">Assigned to: ${ticket.agent}</small>
+                `;
+                ticketElement.addEventListener('click', () => viewDetails(ticket.id));
+                container.appendChild(ticketElement);
+            });
+        }
+
+        function applyFilters() {
+            const status = document.getElementById("statusFilter").value;
+            const category = document.getElementById("categoryFilter").value;
+            const sortBy = document.getElementById("sortFilter").value;
+
+            let filtered = [...tickets];
+            
+            // Apply status filter
+            if (status) {
+                filtered = filtered.filter(t => t.status === status);
+            }
+            
+            // Apply category filter
+            if (category) {
+                filtered = filtered.filter(t => t.category === category);
+            }
+            
+            // Apply sorting
+            if (sortBy === "replies") {
+                filtered.sort((a, b) => b.replies - a.replies);
+            } else if (sortBy === "recent") {
+                filtered.sort((a, b) => new Date(b.updated) - new Date(a.updated));
+            } else if (sortBy === "oldest") {
+                filtered.sort((a, b) => new Date(a.updated) - new Date(b.updated));
+            }
+
+            renderTickets(filtered);
+        }
+
+        function createTicket() {
+            const subject = document.getElementById("subject").value;
+            const desc = document.getElementById("desc").value;
+            const category = document.getElementById("createCategory").value;
+            const priority = document.getElementById("priority").value;
+            
+            if (!subject || !desc || !category) {
+                showToast("Please fill all required fields", "error");
+                return;
+            }
+            
+            // Create new ticket object
+            const newTicket = {
+                id: tickets.length + 1,
+                subject: subject,
+                category: category,
+                description: desc,
+                status: "Open",
+                priority: priority,
+                replies: 0,
+                updated: new Date().toISOString().split('T')[0],
+                created: new Date().toISOString().split('T')[0],
+                agent: "Unassigned"
+            };
+            
+            // Add to tickets array
+            tickets.unshift(newTicket);
+            
+            // Show success message
+            const modal = bootstrap.Modal.getInstance(document.getElementById('newTicketModal'));
+            modal.hide();
+            
+            // Show toast notification
+            showToast('Ticket created successfully!', 'success');
+            
+            // Reset form
+            document.getElementById("ticketForm").reset();
+            
+            // Refresh tickets list
+            renderTickets(tickets);
+        }
+
+        function viewDetails(id) {
+            const ticket = tickets.find(t => t.id === id);
+            if (!ticket) return;
+            
+            // In a real app, this would open a detailed view page/modal
+            const modalHtml = `
+                <div class="modal fade" id="ticketModal" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Ticket #${ticket.id}: ${ticket.subject}</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="row mb-4">
+                                    <div class="col-md-6">
+                                        <p><strong>Status:</strong> <span class="ticket-status status-${ticket.status.toLowerCase()}">${ticket.status}</span></p>
+                                        <p><strong>Category:</strong> ${ticket.category}</p>
+                                        <p><strong>Priority:</strong> ${ticket.priority}</p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <p><strong>Created:</strong> ${ticket.created}</p>
+                                        <p><strong>Updated:</strong> ${ticket.updated}</p>
+                                        <p><strong>Assigned To:</strong> ${ticket.agent}</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="card mb-4">
+                                    <div class="card-header">
+                                        <h6>Description</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <p>${ticket.description}</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="card">
+                                    <div class="card-header d-flex justify-content-between align-items-center">
+                                        <h6 class="mb-0">Conversation</h6>
+                                        <span class="badge bg-primary">${ticket.replies} replies</span>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="d-flex mb-4">
+                                            <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.email.split('@')[0])}&background=4e73df&color=fff" 
+                                                 class="avatar me-3" alt="User">
+                                            <div>
+                                                <div class="d-flex justify-content-between">
+                                                    <strong>You</strong>
+                                                    <small class="text-muted">${ticket.created}</small>
+                                                </div>
+                                                <p>${ticket.description}</p>
+                                            </div>
+                                        </div>
+                                        
+                                        ${ticket.replies > 0 ? `
+                                        <div class="d-flex mb-4">
+                                            <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(ticket.agent.split(' ')[0])}&background=6c757d&color=fff" 
+                                                 class="avatar me-3" alt="Agent">
+                                            <div>
+                                                <div class="d-flex justify-content-between">
+                                                    <strong>${ticket.agent}</strong>
+                                                    <small class="text-muted">${ticket.updated}</small>
+                                                </div>
+                                                <p>Thanks for reporting this issue. We're looking into it and will update you soon.</p>
+                                            </div>
+                                        </div>
+                                        ` : ''}
+                                        
+                                        <div class="mt-4">
+                                            <textarea class="form-control mb-2" placeholder="Add a reply..."></textarea>
+                                            <button class="btn btn-primary">Post Reply</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                ${ticket.status !== 'Resolved' && ticket.status !== 'Closed' ? `
+                                <button type="button" class="btn btn-success">Mark as Resolved</button>
+                                ` : ''}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Add modal to DOM
+            const modalContainer = document.createElement('div');
+            modalContainer.innerHTML = modalHtml;
+            document.body.appendChild(modalContainer);
+            
+            // Show modal
+            const modal = new bootstrap.Modal(document.getElementById('ticketModal'));
+            modal.show();
+            
+            // Remove modal from DOM after it's hidden
+            document.getElementById('ticketModal').addEventListener('hidden.bs.modal', function() {
+                modalContainer.remove();
+            });
+        }
+
+        function showToast(message, type = 'success') {
+            // Remove any existing toasts
+            document.querySelectorAll('.toast-container').forEach(el => el.remove());
+            
+            const toastHtml = `
+                <div class="toast-container position-fixed bottom-0 end-0 p-3">
+                    <div id="liveToast" class="toast show" role="alert" aria-live="assertive" aria-atomic="true">
+                        <div class="toast-header">
+                            <strong class="me-auto">RoadGuard</strong>
+                            <small>Just now</small>
+                            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                        </div>
+                        <div class="toast-body">
+                            <i class="fas ${type === 'success' ? 'fa-check-circle text-success' : 'fa-exclamation-circle text-danger'} me-2"></i>
+                            ${message}
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            const toastContainer = document.createElement('div');
+            toastContainer.innerHTML = toastHtml;
+            document.body.appendChild(toastContainer);
+            
+            // Remove toast after 5 seconds
+            setTimeout(() => {
+                toastContainer.remove();
+            }, 5000);
+        }
+
+        function logout() {
+            localStorage.removeItem("currentUser");
+            window.location.href = "login.html";
+        }
+    </script>
+</body>
+</html>
