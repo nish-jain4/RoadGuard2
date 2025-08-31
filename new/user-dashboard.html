@@ -224,7 +224,7 @@
         
         <div class="sidebar-divider"></div>
         
-        <a href="#" class="sidebar-link">
+        <a href="user-settings.html" class="sidebar-link">
             <i class="fas fa-fw fa-cog"></i>
             <span>Settings</span>
         </a>
@@ -295,11 +295,11 @@
                             <span class="d-none d-lg-inline">User Name</span>
                         </a>
                         <div class="dropdown-menu dropdown-menu-right shadow">
-                            <a class="dropdown-item" href="#">
+                            <a class="dropdown-item" href="user-profile.html">
                                 <i class="fas fa-user fa-sm fa-fw mr-2"></i>
                                 Profile
                             </a>
-                            <a class="dropdown-item" href="#">
+                            <a class="dropdown-item" href="user-settings.html">
                                 <i class="fas fa-cogs fa-sm fa-fw mr-2"></i>
                                 Settings
                             </a>
@@ -648,10 +648,10 @@
                             <label for="createCategory" class="form-label">Category</label>
                             <select class="form-select" id="createCategory" required>
                                 <option value="">Select a category</option>
-                                <option value="Login">Login Issues</option>
-                                <option value="Email">Email Problems</option>
-                                <option value="Billing">Billing Questions</option>
-                                <option value="Technical">Technical Support</option>
+                                <option value="Login">Fuel</option>
+                                <option value="Email">Tyre punture</option>
+                                <option value="Billing">Break System Issue</option>
+                                <option value="Technical">Technical Issue</option>
                                 <option value="Other">Other</option>
                             </select>
                         </div>
@@ -816,7 +816,6 @@
         }
 
         function initAssistanceMap() {
-            // Default coordinates (New York City)
             const defaultLat = 40.7128;
             const defaultLng = -74.0060;
             
